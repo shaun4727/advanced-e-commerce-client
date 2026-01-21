@@ -30,90 +30,159 @@ export function NavigationRow() {
     return (
         <>
             {isMobile ? (
-                <div className="bg-blue-600 py-2 px-1.5">
+                <div className="bg-blue-700 px-2 py-2">
                     <Drawer direction="left">
                         <DrawerTrigger asChild>
                             <Button
                                 variant="ghost"
-                                className="hover:border-white hover:border focus:border-white focus:border border-transparent border"
+                                className="border border-transparent hover:border-white focus:border-white"
                             >
-                                <Menu className="text-white" />
+                                <Menu className="text-white h-5 w-5" />
                             </Button>
                         </DrawerTrigger>
+
                         <DrawerContent
-                            className="w-[60%] h-full  rounded-l-none border-blue-600 "
+                            className="h-full w-[70%] max-w-xs rounded-l-none bg-white border-r border-blue-600"
                             showHandle={false}
                         >
+                            {/* Close Button */}
                             <DrawerClose asChild>
-                                <div className="flex justify-end p-3">
+                                <div className="flex justify-end p-3 border-b border-blue-600/20">
                                     <Button
-                                        variant="outline"
-                                        className="w-8 text-black"
+                                        size="icon"
+                                        variant="ghost"
+                                        className="text-blue-700 hover:bg-blue-600/10"
                                     >
-                                        <X />
+                                        <X className="h-5 w-5" />
                                     </Button>
                                 </div>
                             </DrawerClose>
-                            <DrawerTitle className="hidden">
-                                Move Goal
+
+                            <DrawerTitle className="sr-only">
+                                Navigation
                             </DrawerTitle>
+
+                            {/* Navigation */}
                             <Accordion
-                                defaultValue={['shipping']}
-                                className="max-w-lg"
                                 type="multiple"
+                                defaultValue={['electronics']}
+                                className="px-3 py-2 space-y-2"
                             >
-                                <AccordionItem value="shipping">
-                                    <AccordionTrigger>
-                                        <h1 className="text-md font-bold">
-                                            Electronics and Others
-                                        </h1>
+                                {/* CATEGORY */}
+                                <AccordionItem
+                                    value="electronics"
+                                    className="border-b border-blue-600/20"
+                                >
+                                    <AccordionTrigger className="hover:no-underline">
+                                        <span className="text-blue-700 font-semibold text-sm">
+                                            Electronics & Others
+                                        </span>
                                     </AccordionTrigger>
-                                    <AccordionContent>
-                                        <AccordionItem value="accessories">
-                                            <AccordionTrigger>
-                                                <h1 className="text-sm font-medium">
+
+                                    <AccordionContent className="pl-2">
+                                        {/* SUB CATEGORY */}
+                                        <AccordionItem
+                                            value="accessories"
+                                            className="border-none"
+                                        >
+                                            <AccordionTrigger className="py-2 hover:no-underline">
+                                                <span className="text-blue-600 font-medium text-sm">
                                                     Home Accessories
-                                                </h1>
+                                                </span>
                                             </AccordionTrigger>
+
                                             <AccordionContent>
-                                                <ul>
-                                                    <li className="font-light">
-                                                        something
+                                                <ul className="ml-3 mt-1 space-y-1">
+                                                    {[
+                                                        'Something',
+                                                        'Something',
+                                                        'Something',
+                                                    ].map((item, i) => (
+                                                        <li
+                                                            key={i}
+                                                            className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer"
+                                                        >
+                                                            {item}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* CATEGORY 2 */}
+                                <AccordionItem
+                                    value="category-2"
+                                    className="border-b border-blue-600/20"
+                                >
+                                    <AccordionTrigger className="hover:no-underline">
+                                        <span className="text-blue-700 font-semibold text-sm">
+                                            Category 2
+                                        </span>
+                                    </AccordionTrigger>
+
+                                    <AccordionContent className="pl-2">
+                                        <AccordionItem
+                                            value="sub-2"
+                                            className="border-none"
+                                        >
+                                            <AccordionTrigger className="py-2 hover:no-underline">
+                                                <span className="text-blue-600 font-medium text-sm">
+                                                    Sub Category
+                                                </span>
+                                            </AccordionTrigger>
+
+                                            <AccordionContent>
+                                                <ul className="ml-3 mt-1 space-y-1">
+                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
+                                                        Something
                                                     </li>
-                                                    <li className="font-light">
-                                                        something
+                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
+                                                        Something
                                                     </li>
-                                                    <li className="font-light">
-                                                        something
+                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
+                                                        Something
                                                     </li>
                                                 </ul>
                                             </AccordionContent>
                                         </AccordionItem>
                                     </AccordionContent>
                                 </AccordionItem>
-                                <AccordionItem value="returns">
-                                    <AccordionTrigger>
-                                        <h1 className="text-md font-bold">
-                                            Watches
-                                        </h1>
+
+                                {/* CATEGORY 3 */}
+                                <AccordionItem value="category-3">
+                                    <AccordionTrigger className="hover:no-underline">
+                                        <span className="text-blue-700 font-semibold text-sm">
+                                            Category 3
+                                        </span>
                                     </AccordionTrigger>
-                                    <AccordionContent>
-                                        Returns accepted within 30 days. Items
-                                        must be unused and in original
-                                        packaging. Refunds processed within 5-7
-                                        business days.
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="support">
-                                    <AccordionTrigger>
-                                        <h1 className="text-md font-bold">
-                                            TShirts
-                                        </h1>
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        Reach us via email, live chat, or phone.
-                                        We respond within 24 hours during
-                                        business days.
+
+                                    <AccordionContent className="pl-2">
+                                        <AccordionItem
+                                            value="sub-3"
+                                            className="border-none"
+                                        >
+                                            <AccordionTrigger className="py-2 hover:no-underline">
+                                                <span className="text-blue-600 font-medium text-sm">
+                                                    Sub Category
+                                                </span>
+                                            </AccordionTrigger>
+
+                                            <AccordionContent>
+                                                <ul className="ml-3 mt-1 space-y-1">
+                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
+                                                        Something
+                                                    </li>
+                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
+                                                        Something
+                                                    </li>
+                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
+                                                        Something
+                                                    </li>
+                                                </ul>
+                                            </AccordionContent>
+                                        </AccordionItem>
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>

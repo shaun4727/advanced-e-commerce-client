@@ -9,19 +9,19 @@ import { NavigationRow } from './navbar-row';
 export const NavBar = () => {
     return (
         <header>
-            <div className="bg-blue-700 flex flex-col justify-center items-center gap-2 py-2 overflow-hidden">
+            <div className="bg-blue-700 flex flex-col justify-center items-center gap-2 py-2 md:flex-row md:gap-4 md:justify-between md:px-6 overflow-hidden">
                 <div className="">
                     <h1 className="text-xl font-bold text-yellow-400">Emart</h1>
                 </div>
 
-                <div className="">
-                    <div className="flex">
+                <div className="md:w-1/2">
+                    <div className="flex md:w-full">
                         {' '}
                         {/* consistent height for all children */}
                         <Input
                             placeholder="Search here..."
                             onBlur={() => {}}
-                            className="bg-white rounded-r-none basis-64"
+                            className="bg-white rounded-r-none basis-64 md:flex-1"
                         />
                         <Button
                             onClick={() => {}}

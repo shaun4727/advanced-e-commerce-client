@@ -1,6 +1,19 @@
 'use client';
 
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerTitle,
+    DrawerTrigger,
+} from '@/components/ui/drawer';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -9,6 +22,7 @@ import {
     NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Menu, X } from 'lucide-react';
 
 export function NavigationRow() {
     const isMobile = useIsMobile();
@@ -16,7 +30,96 @@ export function NavigationRow() {
     return (
         <>
             {isMobile ? (
-                <p>Mobile page</p>
+                <div className="bg-blue-600 py-2 px-1.5">
+                    <Drawer direction="left">
+                        <DrawerTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                className="hover:border-white hover:border focus:border-white focus:border border-transparent border"
+                            >
+                                <Menu className="text-white" />
+                            </Button>
+                        </DrawerTrigger>
+                        <DrawerContent
+                            className="w-[60%] h-full  rounded-l-none border-blue-600 "
+                            showHandle={false}
+                        >
+                            <DrawerClose asChild>
+                                <div className="flex justify-end p-3">
+                                    <Button
+                                        variant="outline"
+                                        className="w-8 text-black"
+                                    >
+                                        <X />
+                                    </Button>
+                                </div>
+                            </DrawerClose>
+                            <DrawerTitle className="hidden">
+                                Move Goal
+                            </DrawerTitle>
+                            <Accordion
+                                defaultValue={['shipping']}
+                                className="max-w-lg"
+                                type="multiple"
+                            >
+                                <AccordionItem value="shipping">
+                                    <AccordionTrigger>
+                                        <h1 className="text-md font-bold">
+                                            Electronics and Others
+                                        </h1>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <AccordionItem value="accessories">
+                                            <AccordionTrigger>
+                                                <h1 className="text-sm font-medium">
+                                                    Home Accessories
+                                                </h1>
+                                            </AccordionTrigger>
+                                            <AccordionContent>
+                                                <ul>
+                                                    <li className="font-light">
+                                                        something
+                                                    </li>
+                                                    <li className="font-light">
+                                                        something
+                                                    </li>
+                                                    <li className="font-light">
+                                                        something
+                                                    </li>
+                                                </ul>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="returns">
+                                    <AccordionTrigger>
+                                        <h1 className="text-md font-bold">
+                                            Watches
+                                        </h1>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        Returns accepted within 30 days. Items
+                                        must be unused and in original
+                                        packaging. Refunds processed within 5-7
+                                        business days.
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="support">
+                                    <AccordionTrigger>
+                                        <h1 className="text-md font-bold">
+                                            TShirts
+                                        </h1>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        Reach us via email, live chat, or phone.
+                                        We respond within 24 hours during
+                                        business days.
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </DrawerContent>
+                    </Drawer>
+                </div>
             ) : (
                 <NavigationMenu className="bg-blue-600 flex py-3 gap-3 text-white max-w-none justify-start">
                     <NavigationMenuList>

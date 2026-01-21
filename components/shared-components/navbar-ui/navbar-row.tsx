@@ -190,7 +190,7 @@ export function NavigationRow() {
                     </Drawer>
                 </div>
             ) : (
-                <NavigationMenu className="bg-blue-600 flex py-3 gap-3 text-white max-w-none justify-start">
+                <NavigationMenu className="bg-blue-600 flex py-3 gap-3 text-white max-w-none justify-start md:px-16">
                     <NavigationMenuList>
                         <NavigationMenuItem>
                             <Button className="bg-blue-600 shadow-none text-white b-0 group inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 font-medium transition-colors hover:bg-blue-500 hover:text-white focus:bg-blue-500 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50  group text-md">

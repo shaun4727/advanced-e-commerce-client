@@ -1,3 +1,5 @@
+'use client';
+
 import { CategoryCard } from './category-components/category-card';
 import { Categories } from './constants';
 
@@ -17,9 +19,17 @@ export const CategorySection = () => {
                     </p>
                 </div>
 
-                <div className="flex gap-2.5 overflow-x-auto">
+                <div className="flex gap-2.5 overflow-x-auto md:hidden">
                     {Categories.map((category, index) => (
                         <div key={index} className="shrink-0 cursor-pointer">
+                            <CategoryCard />
+                        </div>
+                    ))}
+                </div>
+
+                <div className="hidden md:grid grid-cols-3 lg:grid-cols-5 xl:grid-cols-4 gap-6">
+                    {Categories?.map((_, index) => (
+                        <div onClick={() => {}} key={index}>
                             <CategoryCard />
                         </div>
                     ))}

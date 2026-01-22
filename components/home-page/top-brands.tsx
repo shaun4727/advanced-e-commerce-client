@@ -42,38 +42,44 @@ export const TopBrandsComponent = () => {
 
     return (
         <div className="my-8 px-2.5">
-            <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                    Top Brands
-                </h2>
-                <p className="text-gray-600">
-                    Discover products from the worlds leading brands
-                </p>
+            <div className="flex justify-between">
+                <div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                        Top Brands
+                    </h2>
+                    <p className="text-gray-600">
+                        Discover products from the worlds leading brands
+                    </p>
+                </div>
+
+                {/* Navigation Arrows */}
+                <div className="hidden lg:flex items-center space-x-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={prevSlide}
+                        className="rounded-full hover:bg-blue-50 hover:border-blue-300"
+                        disabled={currentIndex === 0}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={nextSlide}
+                        className="rounded-full hover:bg-blue-50 hover:border-blue-300"
+                        disabled={
+                            currentIndex >=
+                            dataBrands.length - itemsPerView.desktop
+                        }
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
 
-            {/* Navigation Arrows */}
-            <div className="hidden lg:flex items-center space-x-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {}}
-                    className="rounded-full hover:bg-blue-50 hover:border-blue-300"
-                    disabled={false}
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {}}
-                    className="rounded-full hover:bg-blue-50 hover:border-blue-300"
-                    disabled={false}
-                >
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-            </div>
             {/* Brands Grid */}
-            <div className="relative">
+            <div className="relative mt-4">
                 {/* Desktop Carousel */}
                 <div className="hidden lg:block overflow-hidden">
                     <div

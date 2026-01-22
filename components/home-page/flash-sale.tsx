@@ -1,33 +1,105 @@
 'use client';
 
-import { Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { CountdownTimer } from './flash-sale-components/count-down-timer';
 import { ProductCard } from './flash-sale-components/product-card';
 
 export const FlashSale = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const itemsPerView = 4;
+    const router = useRouter();
+
+    const products = [1, 2, 3, 4, 5, 6, 7];
+
+    const nextSlide = () => {
+        setCurrentIndex(
+            (prev) =>
+                (prev + 1) % Math.max(1, products.length - itemsPerView + 1),
+        );
+    };
+
+    const prevSlide = () => {
+        setCurrentIndex(
+            (prev) =>
+                (prev - 1 + Math.max(1, products.length - itemsPerView + 1)) %
+                Math.max(1, products.length - itemsPerView + 1),
+        );
+    };
+
+    const flashProducts = [1, 2, 3, 4, 5, 6, 7, 8];
+
     return (
         <div className="w-full mt-16 px-2.5">
-            <div className="flex items-center space-x-4 mb-4">
-                <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center">
-                        <Zap className="h-5 w-5 text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        Flash Sale
-                    </h2>
-                </div>
-                <CountdownTimer />
-            </div>
-            <div className="md:hidden">
-                <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {[1, 1, 1, 1]?.map((_, index) => (
-                        <div key={index} className="w-64 shrink-0">
-                            <ProductCard />
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center">
+                            <Zap className="h-5 w-5 text-white" />
                         </div>
-                    ))}
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            Flash Sale
+                        </h2>
+                    </div>
+                    <CountdownTimer />
+                </div>
+
+                {/* Navigation Arrows */}
+                <div className="hidden md:flex items-center space-x-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={prevSlide}
+                        className="rounded-full"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={nextSlide}
+                        className="rounded-full"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
                 </div>
             </div>
+
+            {/* Products Grid */}
+            <div className="relative">
+                {/* Desktop Grid */}
+                <div className="hidden md:block overflow-hidden">
+                    <div
+                        className="flex transition-transform duration-300 ease-in-out"
+                        style={{
+                            transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+                        }}
+                    >
+                        {flashProducts?.map((_, index) => (
+                            <div
+                                key={index}
+                                className="w-1/4 shrink-0 px-3 cursor-pointer"
+                            >
+                                <ProductCard />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Mobile Scroll */}
+                <div className="md:hidden">
+                    <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+                        {flashProducts?.map((_, index) => (
+                            <div key={index} className="w-64 shrink-0">
+                                <ProductCard />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
             {/* View All Button */}
             <div className="text-center mt-8">
                 <Button

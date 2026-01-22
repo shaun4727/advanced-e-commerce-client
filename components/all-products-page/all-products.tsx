@@ -94,9 +94,6 @@ export const AllProducts = () => {
                                                                 rating={rating}
                                                                 reviewCount={0}
                                                             />
-                                                            <span className="text-sm text-gray-600">
-                                                                & Up
-                                                            </span>
                                                         </div>
                                                     </label>
                                                 </div>

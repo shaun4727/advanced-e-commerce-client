@@ -119,61 +119,6 @@ export const AllProductsFilter = () => {
                             </Button>
                         </div>
                     </div>
-
-                    {/* Active Filters Summary */}
-                    {(brandProducts.length > 0 || selectedRating !== null) && (
-                        <>
-                            <Separator className="my-6" />
-                            <div>
-                                <h4 className="font-semibold text-gray-900 mb-3">
-                                    Active Filters
-                                </h4>
-                                <div className="space-y-2">
-                                    {brandProducts.map((_, index) => {
-                                        return (
-                                            <div
-                                                key={index}
-                                                className="flex items-center justify-between bg-blue-50 px-3 py-1 rounded-full"
-                                            >
-                                                <span className="text-sm text-blue-700">
-                                                    Brand Name
-                                                </span>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => {}}
-                                                    className="h-auto p-1 text-blue-600 hover:text-blue-800"
-                                                >
-                                                    ×
-                                                </Button>
-                                            </div>
-                                        );
-                                    })}
-                                    {selectedRating && (
-                                        <div className="flex items-center justify-between bg-blue-50 px-3 py-1 rounded-full">
-                                            <div className="flex items-center space-x-1">
-                                                <StartRating
-                                                    rating={selectedRating}
-                                                    reviewCount={0}
-                                                />
-                                                <span className="text-sm text-blue-700">
-                                                    & Up
-                                                </span>
-                                            </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {}}
-                                                className="h-auto p-1 text-blue-600 hover:text-blue-800"
-                                            >
-                                                ×
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </>
-                    )}
                 </CardContent>
             </Card>
         </div>

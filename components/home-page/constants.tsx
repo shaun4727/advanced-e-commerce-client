@@ -1,4 +1,15 @@
-import { ShieldCheck, Tag, Truck } from 'lucide-react';
+import {
+    BookText,
+    Briefcase,
+    HatGlasses,
+    Pen,
+    ShieldCheck,
+    Shirt,
+    Sword,
+    Tag,
+    Truck,
+    Watch,
+} from 'lucide-react';
 
 export const heroSlides = [
     {
@@ -45,5 +56,74 @@ export const benefits = [
         icon: <Tag className="h-8 w-8 text-white" />,
         title: 'SPECIAL SALE',
         description: 'Extra $5 off on all items',
+    },
+];
+
+// category constants
+
+interface Category {
+    id: string;
+    name: string;
+    icon: React.ReactNode;
+    href: string;
+    count?: number;
+}
+
+const categories: Category[] = [
+    {
+        id: 'tshirt',
+        name: 'T-Shirt',
+        icon: <Shirt className="h-8 w-8" />,
+        href: '/category/tshirt',
+        count: 245,
+    },
+    {
+        id: 'jacket',
+        name: 'Jacket',
+        icon: <Pen className="h-8 w-8" />,
+        href: '/category/jacket',
+        count: 128,
+    },
+    {
+        id: 'skirt',
+        name: 'Skirt',
+        icon: <Sword className="h-8 w-8" />,
+        href: '/category/skirt',
+        count: 89,
+    },
+    {
+        id: 'jeans',
+        name: 'Jeans',
+        icon: <BookText className="h-8 w-8" />,
+        href: '/category/jeans',
+        count: 156,
+    },
+    {
+        id: 'bag',
+        name: 'Bag',
+        icon: <Briefcase className="h-8 w-8" />,
+        href: '/category/bag',
+        count: 203,
+    },
+    {
+        id: 'shoes',
+        name: 'Shoes',
+        icon: <BookText className="h-8 w-8" />,
+        href: '/category/shoes',
+        count: 312,
+    },
+    {
+        id: 'watches',
+        name: 'Watches',
+        icon: <Watch className="h-8 w-8" />,
+        href: '/category/watches',
+        count: 67,
+    },
+    {
+        id: 'cap',
+        name: 'Cap',
+        icon: <HatGlasses className="h-8 w-8" />,
+        href: '/category/cap',
+        count: 94,
     },
 ];

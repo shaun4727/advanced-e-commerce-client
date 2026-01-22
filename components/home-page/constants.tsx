@@ -1,3 +1,4 @@
+import { Category } from '@/types';
 import {
     BookText,
     Briefcase,
@@ -61,15 +62,7 @@ export const benefits = [
 
 // category constants
 
-interface Category {
-    id: string;
-    name: string;
-    icon: React.ReactNode;
-    href: string;
-    count?: number;
-}
-
-const categories: Category[] = [
+export const Categories: Category[] = [
     {
         id: 'tshirt',
         name: 'T-Shirt',

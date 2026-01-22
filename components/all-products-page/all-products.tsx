@@ -98,6 +98,7 @@ export const AllProducts = () => {
                                 >
                                     {brandProducts.map((_, index) => (
                                         <ProductCard
+                                            key={index}
                                             viewMode={viewMode}
                                             index={index}
                                         />

@@ -190,7 +190,7 @@ export function NavigationRow() {
                     </Drawer>
                 </div>
             ) : (
-                <NavigationMenu className="bg-blue-600 flex py-3 gap-3 text-white max-w-none justify-start">
+                <NavigationMenu className="bg-blue-600 flex py-3 gap-3 text-white max-w-none justify-start md:px-16">
                     <NavigationMenuList>
                         <NavigationMenuItem>
                             <Button className="bg-blue-600 shadow-none text-white b-0 group inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 font-medium transition-colors hover:bg-blue-500 hover:text-white focus:bg-blue-500 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50  group text-md">
@@ -202,7 +202,7 @@ export function NavigationRow() {
                                 ELectronic & Others
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
-                                <div className="flex p-4">
+                                <div className="flex p-4 z-999">
                                     <div className="grid grid-cols-2 grid-rows-2 gap-4 w-xl p-4">
                                         <div>
                                             <h1 className="font-bold text-md border-b border-gray-200 pb-2">

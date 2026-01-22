@@ -70,7 +70,7 @@ export const TrendingProducts = () => {
                     ))}
                 </div>
                 {/* Desktop Grid */}
-                <div className="hidden md:block overflow-hidden">
+                <div className="hidden md:block py-4 overflow-hidden">
                     <div
                         className="flex transition-transform duration-300 ease-in-out"
                         style={{

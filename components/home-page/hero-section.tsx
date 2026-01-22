@@ -25,7 +25,7 @@ export const HeroSection = () => {
 
     const currentHero = heroSlides[currentSlide];
     return (
-        <div className="w-full md:px-16">
+        <div className="w-full md:px-16 z-10">
             <div className="h-75 mt-4 relative w-full bg-black/40 md:mt-8">
                 <div className="absolute inset-0">
                     <Image

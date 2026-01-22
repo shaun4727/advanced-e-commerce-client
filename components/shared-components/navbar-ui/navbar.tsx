@@ -8,8 +8,8 @@ import { NavigationRow } from './navbar-row';
 
 export const NavBar = () => {
     return (
-        <header>
-            <div className="bg-blue-700 flex flex-col justify-center items-center gap-2.5 py-2 md:flex-row md:gap-4 md:justify-between px-16  overflow-hidden">
+        <header className="z-30">
+            <div className="bg-blue-700 flex flex-col justify-center items-center gap-2 py-2 md:flex-row md:gap-4 md:justify-between px-16  overflow-hidden">
                 <div className="">
                     <h1 className="text-xl font-bold text-yellow-400">Emart</h1>
                 </div>

@@ -202,7 +202,7 @@ export function NavigationRow() {
                                 ELectronic & Others
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
-                                <div className="flex p-4 z-999">
+                                <div className="flex p-4">
                                     <div className="grid grid-cols-2 grid-rows-2 gap-4 w-xl p-4">
                                         <div>
                                             <h1 className="font-bold text-md border-b border-gray-200 pb-2">

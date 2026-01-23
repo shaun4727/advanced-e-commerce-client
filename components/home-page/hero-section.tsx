@@ -1,10 +1,11 @@
 'use client';
 
+import { useUser } from '@/context/UserContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { benefits, heroSlides } from './constants';
@@ -12,6 +13,7 @@ import { benefits, heroSlides } from './constants';
 export const HeroSection = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const isMobile = useIsMobile();
+    const { setIsLoading } = useUser();
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -22,6 +24,10 @@ export const HeroSection = () => {
             (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
         );
     };
+
+    useEffect(() => {
+        setIsLoading(true);
+    }, []);
 
     const currentHero = heroSlides[currentSlide];
     return (

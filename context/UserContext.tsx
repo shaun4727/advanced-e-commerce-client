@@ -22,15 +22,16 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<IUser | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    //   const socket = useMemo(() => io(process.env.NEXT_PUBLIC_BASE_SERVER!), []);
-
     const handleUser = async () => {
         const user = await getCurrentUser();
+        //getting shop info
+
         setUser(user);
         setIsLoading(false);
     };
 
     useEffect(() => {
+        if (!isLoading) return;
         handleUser();
     }, [isLoading]);
 

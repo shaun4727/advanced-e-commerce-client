@@ -51,6 +51,19 @@ const page = () => {
         // handle login logic
     };
 
+    const setCredentialMethod = (type: string) => {
+        if (type === 'user') {
+            setValue('email', 'shaun.mononsoft@gmail.com');
+            setValue('password', 'password');
+        } else if (type === 'admin') {
+            setValue('email', 'hossain@mail.com');
+            setValue('password', '12345678');
+        } else {
+            setValue('email', 'agent@gmail.com');
+            setValue('password', 'password');
+        }
+    };
+
     return (
         <div className="flex items-center h-180">
             <Card className="max-w-md flex-1  mx-auto bg-white shadow-sm">
@@ -74,7 +87,7 @@ const page = () => {
                             Sign In with User
                         </Button>
                         <Button
-                            onClick={() => {}}
+                            onClick={() => setCredentialMethod('admin')}
                             variant="default"
                             className="bg-cyan-400 hover:bg-cyan-500 text-white flex items-center justify-center gap-2 py-3 cursor-pointer"
                         >

@@ -163,7 +163,7 @@ const page = () => {
                         Do not have an account?{' '}
                         <span
                             className=" cursor-pointer text-blue-600"
-                            onClick={() => {}}
+                            onClick={() => router.push('/register')}
                         >
                             Register
                         </span>

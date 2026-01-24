@@ -7,6 +7,7 @@ export const socialSchema = z.object({
 });
 
 export const createShopSchema = z.object({
+    _id: z.string().optional(),
     shopName: z.string().min(1, 'Shop Name is required'),
     businessLicenseNumber: z.string().min(1, 'Business License no is required'),
     address: z.string().min(1, 'Address is required'),
@@ -15,6 +16,7 @@ export const createShopSchema = z.object({
     establishedYear: z.string().min(1, 'Established year is required'),
     taxIdentificationNumber: z.string().min(1, 'TIN is required'),
     socialMediaLinks: socialSchema,
+    logo: z.string().optional(),
     servicesOffered: z.string().min(1, 'Services are required'),
 });
 

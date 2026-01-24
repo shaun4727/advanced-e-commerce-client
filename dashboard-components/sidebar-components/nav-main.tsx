@@ -89,9 +89,9 @@ export function NavMain({
                                                     <SidebarMenuSubButton
                                                         asChild
                                                     >
-                                                        <Link href="/dashboard/shop/products">
+                                                        <Link href="/dashboard/shop/shop-detail">
                                                             <span>
-                                                                Manage Products
+                                                                Manage Shop
                                                             </span>
                                                         </Link>
                                                     </SidebarMenuSubButton>

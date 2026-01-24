@@ -38,6 +38,10 @@ const data = {
             isCollapsible: true,
             items: [
                 {
+                    title: 'Manage Shop',
+                    url: '/dashboard/shop/shop-detail',
+                },
+                {
                     title: 'Manage Products',
                     url: '/dashboard/shop/products',
                 },

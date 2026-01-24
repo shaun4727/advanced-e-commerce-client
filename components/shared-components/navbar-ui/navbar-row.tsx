@@ -380,11 +380,12 @@ export function NavigationRow() {
 
                                 <DropdownMenuGroup>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="bg-red-500 hover:bg-red-600 text-white cursor-pointer">
-                                        <LogOut className="text-white" />
-                                        <span onClick={handleLogout}>
-                                            Logout
-                                        </span>
+                                    <DropdownMenuItem
+                                        className="bg-red-500 text-white cursor-pointer focus:bg-red-600 focus:text-white"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>Logout</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>

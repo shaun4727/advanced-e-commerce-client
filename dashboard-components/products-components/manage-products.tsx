@@ -1,15 +1,28 @@
 'use client';
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EPTable } from '@/components/ui/core/EPTable';
 import TablePagination from '@/components/ui/core/EPTable/TablePagination';
+import { deleteProduct } from '@/services/ProductServices';
 import { IMeta, IProduct } from '@/types';
 import { ColumnDef } from '@tanstack/react-table';
-import { Edit, Eye, Plus, Trash } from 'lucide-react';
+import { Edit, Plus, Trash } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import DiscountModal from './product-sub-components/DiscountModal';
 
 const ManageProducts = ({
@@ -22,12 +35,22 @@ const ManageProducts = ({
     const router = useRouter();
     const [selectedIds, setSelectedIds] = useState<string[] | []>([]);
 
-    const handleView = (product: IProduct) => {
-        console.log('Viewing product:', product);
-    };
+    // const handleView = (product: IProduct) => {
+    //     console.log('Viewing product:', product);
+    // };
 
-    const handleDelete = (productId: string) => {
-        console.log('Deleting product with ID:', productId);
+    const handleDelete = async (productId: string) => {
+        try {
+            const res = await deleteProduct(productId);
+
+            if (res.success) {
+                toast.success(res.message);
+            } else {
+                toast.error(res.message);
+            }
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     const columns: ColumnDef<IProduct>[] = [
@@ -89,7 +112,13 @@ const ManageProducts = ({
         {
             accessorKey: 'category',
             header: 'Category',
-            cell: ({ row }) => <span>{row.original.category.name}</span>,
+            cell: ({ row }) => (
+                <span>
+                    {typeof row.original.category === 'object'
+                        ? row.original.category.name
+                        : row.original.category}
+                </span>
+            ),
         },
         {
             accessorKey: 'brand',
@@ -124,40 +153,64 @@ const ManageProducts = ({
             header: 'Action',
             cell: ({ row }) => (
                 <div className="flex items-center space-x-3">
-                    <button
+                    {/* <button
                         className="text-gray-500 hover:text-blue-500"
                         title="View"
                         onClick={() => handleView(row.original)}
                     >
                         <Eye className="w-5 h-5" />
-                    </button>
+                    </button> */}
 
                     <button
                         className="text-gray-500 hover:text-green-500"
                         title="Edit"
                         onClick={() =>
                             router.push(
-                                `/admin/shop/products/update-product/${row.original._id}`,
+                                `/dashboard/shop/products/update-product/${row.original._id}`,
                             )
                         }
                     >
                         <Edit className="w-5 h-5" />
                     </button>
 
-                    <button
-                        className="text-gray-500 hover:text-red-500"
-                        title="Delete"
-                        onClick={() => handleDelete(row.original._id)}
-                    >
-                        <Trash className="w-5 h-5" />
-                    </button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <button
+                                className="text-gray-500 hover:text-red-500"
+                                title="Delete"
+                            >
+                                <Trash className="w-5 h-5" />
+                            </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                    Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will
+                                    permanently delete the product.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() =>
+                                        handleDelete(row.original._id)
+                                    }
+                                >
+                                    Continue
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             ),
         },
     ];
 
     return (
-        <div className="w-full md:min-w-350 p-4 md:p-6 space-y-6">
+        <div className="w-full p-6 space-y-6">
             <div className="flex items-center justify-between border-b pb-4">
                 <h1 className="text-2xl font-semibold tracking-tight">
                     Manage Products
@@ -165,7 +218,7 @@ const ManageProducts = ({
                 <div className="flex items-center gap-2">
                     <Button
                         onClick={() =>
-                            router.push('/admin/shop/products/add-product')
+                            router.push('/dashboard/shop/products/add-product')
                         }
                         size="sm"
                         className="flex items-center gap-2"

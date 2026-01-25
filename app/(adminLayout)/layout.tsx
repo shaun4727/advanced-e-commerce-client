@@ -9,7 +9,7 @@ export default async function DashboardLayout({
     return (
         <SidebarProvider>
             <AppSidebar />
-            <main className="px-50">
+            <main className="flex-1 min-h-screen transition-[margin-left] duration-300 ml-(--sidebar-width)">
                 <SidebarTrigger />
                 {children}
             </main>

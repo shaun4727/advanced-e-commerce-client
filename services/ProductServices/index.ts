@@ -110,6 +110,26 @@ export const addProduct = async (productData: FormData): Promise<any> => {
         return Error(error);
     }
 };
+// add product
+export const deleteProduct = async (productID: string): Promise<any> => {
+    try {
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API}/product/${productID}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    Authorization: (await cookies()).get(
+                        'ecommerce-accessToken',
+                    )!.value,
+                },
+            },
+        );
+        revalidateTag('PRODUCT', 'max');
+        return res.json();
+    } catch (error: any) {
+        return Error(error);
+    }
+};
 
 // update product
 export const updateProduct = async (

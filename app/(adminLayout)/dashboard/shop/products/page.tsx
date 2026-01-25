@@ -1,9 +1,11 @@
-import { ProductPage } from '@/dashboard-components/products-components/product-page';
+import ManageProducts from '@/dashboard-components/products-components/manage-products';
+import { getMyShopProductsApi } from '@/services/ProductServices';
 
-const page = () => {
+const page = async () => {
+    const { data, meta } = await getMyShopProductsApi();
     return (
         <div>
-            <ProductPage />
+            <ManageProducts products={data} meta={meta} />
         </div>
     );
 };

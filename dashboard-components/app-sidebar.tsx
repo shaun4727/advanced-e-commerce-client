@@ -25,8 +25,8 @@ const data = {
             isCollapsible: false,
         },
         {
-            title: 'Create Agent',
-            url: '/dashboard/agent-account-creation',
+            title: 'Nav Menu Builder',
+            url: '/dashboard/nav-menu-builder',
             icon: SquareTerminal,
             isActive: true,
             isCollapsible: false,

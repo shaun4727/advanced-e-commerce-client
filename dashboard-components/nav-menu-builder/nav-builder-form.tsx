@@ -13,10 +13,12 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { createNavigationApi } from '@/services/NavmenuService';
 import { navigationFormSchema, TNavigationForm } from '@/types/navItems';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SortableTree } from 'dnd-kit-sortable-tree';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { MinimalTreeItemComponent } from './minimal-tree-item-container';
 
 export default function NavMenuBuilder() {
@@ -72,8 +74,19 @@ export default function NavMenuBuilder() {
         }
     };
 
-    const onSubmit = (data: TNavigationForm) => {
+    const onSubmit = async (data: TNavigationForm) => {
         console.log('Submitting to DB:', data);
+        try {
+            const res = await createNavigationApi(data);
+            console.log(res);
+            if (res.success) {
+                toast.success(res.message);
+            } else {
+                toast.error(res.message);
+            }
+        } catch (err: unknown) {
+            console.error(err);
+        }
     };
 
     return (

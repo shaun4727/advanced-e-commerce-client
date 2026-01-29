@@ -10,6 +10,7 @@ const MinimalTreeItemInner = React.forwardRef<
     HTMLDivElement,
     TreeItemComponentProps<NavItemData>
 >((props, ref) => {
+    console.log('props', props);
     const {
         // 1. DATA PROPS
         item,

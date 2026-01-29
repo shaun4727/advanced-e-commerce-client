@@ -22,3 +22,20 @@ export const createNavigationApi = async (
 
     return res.json();
 };
+
+export const getNavigationApi = async (): Promise<any> => {
+    const token = await getValidToken();
+
+    const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_API}/navigation/get-menu`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json', // REQUIRED
+                Authorization: token,
+            },
+        },
+    );
+
+    return res.json();
+};

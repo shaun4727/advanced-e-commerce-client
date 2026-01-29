@@ -9,7 +9,7 @@ export interface INavItem {
     isOpenNewTab: boolean;
 }
 
-export interface INavigation extends Document {
+export interface INavigation {
     menuName: string; // e.g., "Main Header"
     items: INavItem[];
     isActive: boolean;
@@ -18,8 +18,10 @@ export interface INavigation extends Document {
 // 1. Internal Recursive Schema
 // We use z.ZodType<any> here to allow recursion,
 // but we won't pass THIS directly to the resolver.
+
 export const navItemInternalSchema: z.ZodType<any> = z.lazy(() =>
     z.object({
+        id: z.string(),
         title: z.string().min(1, 'Title is required'),
         url: z.string().optional().or(z.literal('')),
         category: z.string().optional(),

@@ -13,78 +13,111 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createNavigationApi } from '@/services/NavmenuService';
+import {
+    createNavigationApi,
+    getNavigationApi,
+} from '@/services/NavmenuService';
 import { navigationFormSchema, TNavigationForm } from '@/types/navItems';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SortableTree } from 'dnd-kit-sortable-tree';
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { MinimalTreeItemComponent } from './minimal-tree-item-container';
 
+const SortableTree = dynamic(
+    () => import('dnd-kit-sortable-tree').then((mod) => mod.SortableTree),
+    { ssr: false },
+);
+
 export default function NavMenuBuilder() {
-    // 1. Initialize Form
+    const [navigationMenu, setNavigationMenu] = useState<TNavigationForm>();
+
     const form = useForm<TNavigationForm>({
         resolver: zodResolver(navigationFormSchema),
         defaultValues: {
-            menuName: 'Main Navigation',
+            menuName: '',
             items: [],
         },
     });
 
-    // Watch the items so the UI re-renders when the tree changes
     const menuItems = form.watch('items');
 
+    /* ------------------ ADD MANUAL LINK ------------------ */
     const addManualItem = () => {
         const title = form.getValues('tempTitle');
         const url = form.getValues('tempUrl');
 
         if (!title) return;
 
-        const newItem = {
-            id: Date.now().toString(),
-            title,
-            url: url || '#',
-            type: 'link',
-            children: [],
-        };
+        form.setValue('items', [
+            ...menuItems,
+            {
+                id: Date.now().toString(),
+                data: {
+                    title,
+                    url: url || '#',
+                    type: 'link',
+                },
+                children: [],
+            },
+        ]);
 
-        form.setValue('items', [...menuItems, newItem]);
-        form.setValue('tempTitle', ''); // Clear local form inputs
+        form.setValue('tempTitle', '');
         form.setValue('tempUrl', '');
     };
 
+    /* ------------------ CATEGORY TOGGLE ------------------ */
     const handleCategoryToggle = (cat: any) => {
-        const exists = menuItems.find((i) => i.id === cat.id);
+        const exists = menuItems.find((i) => i.id === cat._id);
+
         if (exists) {
             form.setValue(
                 'items',
-                menuItems.filter((i) => i.id !== cat.id),
+                menuItems.filter((i) => i.id !== cat._id),
             );
         } else {
             form.setValue('items', [
                 ...menuItems,
                 {
-                    id: cat.id,
-                    title: cat.name,
-                    type: 'category',
-                    category: cat.id,
+                    id: cat._id,
+                    data: {
+                        title: cat.title,
+                        type: 'category',
+                        category: cat._id,
+                    },
                     children: [],
                 },
             ]);
         }
     };
 
+    /* ------------------ LOAD EXISTING MENU ------------------ */
+    useEffect(() => {
+        const getNavigationMenu = async () => {
+            try {
+                const res = await getNavigationApi();
+                if (res.success) {
+                    const navMenu = res.data?.find(
+                        (nav: TNavigationForm) =>
+                            nav.menuName === 'Main Navigation',
+                    );
+                    if (navMenu) setNavigationMenu(navMenu);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        getNavigationMenu();
+    }, []);
+
+    /* ------------------ SUBMIT ------------------ */
     const onSubmit = async (data: TNavigationForm) => {
-        console.log('Submitting to DB:', data);
         try {
             const res = await createNavigationApi(data);
-            console.log(res);
-            if (res.success) {
-                toast.success(res.message);
-            } else {
-                toast.error(res.message);
-            }
-        } catch (err: unknown) {
+            res.success ? toast.success(res.message) : toast.error(res.message);
+        } catch (err) {
             console.error(err);
         }
     };
@@ -92,7 +125,7 @@ export default function NavMenuBuilder() {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* Menu Meta Data */}
+                {/* MENU META */}
                 <div className="max-w-xs">
                     <FormField
                         control={form.control}
@@ -110,7 +143,7 @@ export default function NavMenuBuilder() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* LEFT COLUMN: FORMS */}
+                    {/* LEFT */}
                     <div className="space-y-6">
                         <Card>
                             <CardHeader>
@@ -144,33 +177,30 @@ export default function NavMenuBuilder() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {/* Replace with real map */}
-                                {[{ id: '1', name: 'Electronics' }].map(
-                                    (cat) => (
-                                        <div
-                                            key={cat.id}
-                                            className="flex items-center space-x-2"
-                                        >
-                                            <Checkbox
-                                                id={cat.id}
-                                                onCheckedChange={() =>
-                                                    handleCategoryToggle(cat)
-                                                }
-                                                checked={menuItems.some(
-                                                    (i) => i.id === cat.id,
-                                                )}
-                                            />
-                                            <Label htmlFor={cat.id}>
-                                                {cat.name}
-                                            </Label>
-                                        </div>
-                                    ),
-                                )}
+                                {navigationMenu?.items.map((cat) => (
+                                    <div
+                                        key={cat._id}
+                                        className="flex items-center space-x-2"
+                                    >
+                                        <Checkbox
+                                            id={cat._id}
+                                            onCheckedChange={() =>
+                                                handleCategoryToggle(cat)
+                                            }
+                                            checked={menuItems.some(
+                                                (i) => i.id === cat._id,
+                                            )}
+                                        />
+                                        <Label htmlFor={cat._id}>
+                                            {cat.title}
+                                        </Label>
+                                    </div>
+                                ))}
                             </CardContent>
                         </Card>
                     </div>
 
-                    {/* RIGHT COLUMN: THE TREE BUILDER */}
+                    {/* RIGHT */}
                     <div className="md:col-span-2">
                         <Card className="min-h-[500px]">
                             <CardHeader>

@@ -27,6 +27,7 @@ export const SortableItem = ({
         transform,
         transition,
         isDragging,
+        isOver, // Useful for visual feedback when nesting
     } = useSortable({ id });
 
     const style = {
@@ -39,37 +40,52 @@ export const SortableItem = ({
     return (
         <li
             ref={setNodeRef}
-            key={id}
             style={style}
-            {...listeners}
-            {...attributes}
-            className={`cursor-grab touch-none rounded-md border bg-white p-3 active:cursor-grabbing ${isDragging ? 'z-10 opacity-50 shadow-md' : 'dark:border-gray-700 dark:bg-gray-800'} `}
+            // Removed listeners from here to avoid parent/child click conflicts
+            className={`list-none my-2 ${isDragging ? 'z-50' : 'z-0'}`}
         >
-            <div className="flex items-center gap-3">
-                <span className="text-gray-500 dark:text-gray-400">⋮⋮</span>
-                <span className="dark:text-gray-200">{content}</span>
+            <div
+                className={`flex items-center gap-3 rounded-md border bg-white p-3 shadow-sm transition-colors 
+                ${isDragging ? 'opacity-50' : 'opacity-100'} 
+                ${isOver ? 'border-blue-500 bg-blue-50' : 'dark:border-gray-700 dark:bg-gray-800'}`}
+            >
+                {/* DRAG HANDLE: Move listeners here for precise control */}
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-grab touch-none p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                >
+                    <span className="text-gray-500 dark:text-gray-400">⋮⋮</span>
+                </button>
+
+                <span className="dark:text-gray-200 select-none flex-1">
+                    {content}
+                </span>
             </div>
 
-            {/* Render Children Recursively */}
-            {childrenItems.length > 0 && (
-                <div className="ml-8 mt-2 border-l-2 border-gray-200 pl-4">
-                    <SortableContext
-                        items={childrenItems.map((child) => child.id)}
-                        strategy={verticalListSortingStrategy}
-                    >
-                        <ul className="space-y-2">
-                            {childrenItems.map((child) => (
-                                <SortableItem
-                                    key={child.id}
-                                    id={child.id}
-                                    content={child.content}
-                                    childrenItems={child.children || []}
-                                />
-                            ))}
-                        </ul>
-                    </SortableContext>
-                </div>
-            )}
+            {/* NESTED DROP ZONE */}
+            {/* We render the container even if childrenItems is empty to allow for nesting */}
+            <div
+                className={`ml-8 mt-2 border-l-2 border-dashed border-gray-100 pl-4 transition-all
+                ${childrenItems.length === 0 ? 'h-1 py-1' : 'h-auto'} 
+                dark:border-gray-700`}
+            >
+                <SortableContext
+                    items={childrenItems.map((child) => child.id)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    <ul className="space-y-2">
+                        {childrenItems.map((child) => (
+                            <SortableItem
+                                key={child.id}
+                                id={child.id}
+                                content={child.content}
+                                childrenItems={child.children || []}
+                            />
+                        ))}
+                    </ul>
+                </SortableContext>
+            </div>
         </li>
     );
 };

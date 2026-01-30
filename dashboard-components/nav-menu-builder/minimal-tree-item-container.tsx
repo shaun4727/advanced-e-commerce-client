@@ -25,7 +25,6 @@ import {
     useSensors,
 } from '@dnd-kit/core';
 import {
-    arrayMove,
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -63,14 +62,18 @@ export function MinimalTreeItemComponent({
             id: '3',
             content: 'Item 3',
             children: [
-                { id: '11', content: 'nested item 1' },
-                { id: '12', content: 'nested item 2' },
+                { id: '13', content: 'nested item 3' },
+                { id: '14', content: 'nested item 4' },
             ],
         },
         { id: '4', content: 'Item 4' },
         { id: '5', content: 'Item 5' },
     ]);
     const [activeId, SetActiveId] = useState<UniqueIdentifier | null>(null);
+    const [selectedDraggedItem, setSelectedDraggedItem] = useState<recItems>({
+        id: '',
+        content: '',
+    });
     const mouseSensor = useSensor(MouseSensor);
     const touchSensor = useSensor(TouchSensor);
     const keyboardSensor = useSensor(KeyboardSensor);
@@ -79,25 +82,91 @@ export function MinimalTreeItemComponent({
 
     const handleDragStart = (event: DragStartEvent) => {
         SetActiveId(event.active.id);
+
+        items.forEach((nav) => getActiveItem(nav, event.active.id));
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
-        SetActiveId(null);
         const { active, over } = event;
-
         if (!over || active.id === over.id) return;
 
-        setItems((items) => {
-            const oldIndex = items.findIndex((item) => item.id === active.id);
-            const newIndex = items.findIndex((item) => item.id === over.id);
+        setItems((prev) => {
+            let draggedItem: recItems | null = null;
 
-            // This returns a new array with the item moved to the new position
-            return arrayMove(items, oldIndex, newIndex);
+            // 1. PLUCK: Remove the item from its current position
+            const removeFromTree = (list: recItems[]): recItems[] => {
+                return list.reduce((acc, item) => {
+                    if (item.id === active.id) {
+                        draggedItem = item;
+                        return acc;
+                    }
+                    return [
+                        ...acc,
+                        {
+                            ...item,
+                            children: item.children
+                                ? removeFromTree(item.children)
+                                : [],
+                        },
+                    ];
+                }, [] as recItems[]);
+            };
+
+            const cleanTree = removeFromTree(prev);
+            if (!draggedItem) return prev;
+
+            // 2. PLANT: Hybrid Insertion Logic
+            const insertIntoTree = (list: recItems[]): recItems[] => {
+                // Check if 'over' is a sibling at this specific level
+                const overIndex = list.findIndex((i) => i.id === over.id);
+
+                if (overIndex !== -1) {
+                    const newList = [...list];
+                    // Check if we want to nest inside 'over' or just be its neighbor.
+                    // For simplicity: this puts it as a sibling.
+                    newList.splice(overIndex + 1, 0, draggedItem!);
+                    return newList;
+                }
+
+                // If not found at this level, check if any item HERE should be the PARENT
+                return list.map((item) => {
+                    if (item.id === over.id) {
+                        return {
+                            ...item,
+                            children: [...(item.children || []), draggedItem!],
+                        };
+                    }
+                    // Otherwise, recurse deeper
+                    return {
+                        ...item,
+                        children: item.children
+                            ? insertIntoTree(item.children)
+                            : [],
+                    };
+                });
+            };
+
+            return insertIntoTree(cleanTree);
         });
     };
 
-    const getActiveItem = () => {
-        return items.find((item) => item.id === activeId)?.content;
+    const getActiveItem = (nav: recItems, activeID: UniqueIdentifier) => {
+        const menus: recItems[] = [{ ...nav }];
+
+        while (menus.length) {
+            const nav = menus.pop();
+
+            if (!nav) return;
+            if (nav.id === activeID) {
+                setSelectedDraggedItem(nav);
+            }
+
+            for (const subItem of nav.children || []) {
+                if (subItem) {
+                    menus.push(subItem);
+                }
+            }
+        }
     };
 
     const handleDragCancel = (event: DragCancelEvent) => {
@@ -126,8 +195,8 @@ export function MinimalTreeItemComponent({
                     <ul className="space-y-2 p-4">
                         {items.map((menu) => (
                             <SortableItem
-                                key={menu.id}
                                 id={menu.id}
+                                key={menu.id}
                                 content={menu.content}
                                 childrenItems={menu.children || []} // Pass the nested array
                             />
@@ -148,7 +217,7 @@ export function MinimalTreeItemComponent({
                                     ⋮⋮
                                 </span>
                                 <span className="dark:text-gray-200">
-                                    {getActiveItem()}
+                                    {selectedDraggedItem?.content || ''}
                                 </span>
                             </div>
                         </div>

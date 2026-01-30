@@ -1,90 +1,160 @@
-import { TreeItemComponentProps } from 'dnd-kit-sortable-tree';
-import React from 'react';
+'use client';
 
-interface NavItemData {
+interface menuItems {
     id: string;
-    title: string;
+    data: {
+        title: string;
+        url: string;
+        type: string;
+    };
+    children: menuItems[];
 }
 
-const MinimalTreeItemInner = React.forwardRef<
-    HTMLDivElement,
-    TreeItemComponentProps<NavItemData>
->((props, ref) => {
-    console.log('props', props);
-    const {
-        // 1. DATA PROPS
-        item,
-        depth,
-        style,
+import {
+    closestCenter,
+    DndContext,
+    DragCancelEvent,
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
+    KeyboardSensor,
+    MouseSensor,
+    TouchSensor,
+    UniqueIdentifier,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { useState } from 'react';
+import { SortableItem } from './sub-components/sortable-item';
 
-        // 2. STATE PROPS (Swallow these to prevent DOM warnings)
-        childCount = 0,
-        clone,
-        active,
-        indentationWidth,
-        path,
-        isOpen,
-        collapsed,
-        isLast,
-        wrapperRef,
-        handleProps,
-        disableSorting,
-        isOver,
-        isOverParent,
-        showDragHandle,
-        disableInteraction,
-        disableSelection,
-        ghost,
+interface recItems {
+    id: string;
+    content: string;
+    children?: recItems[];
+}
 
-        // 3. EVENT HANDLER PROPS (Swallow these too)
-        onCollapse,
-        onRemove,
+export function MinimalTreeItemComponent({
+    menuItems,
+}: {
+    menuItems: menuItems[];
+}) {
+    const [items, setItems] = useState<
+        {
+            id: string;
+            content: string;
+            children?: recItems[];
+        }[]
+    >([
+        {
+            id: '1',
+            content: 'Item 1',
+            children: [
+                { id: '11', content: 'nested item 1' },
+                { id: '12', content: 'nested item 2' },
+            ],
+        },
+        { id: '2', content: 'Item 2' },
+        {
+            id: '3',
+            content: 'Item 3',
+            children: [
+                { id: '11', content: 'nested item 1' },
+                { id: '12', content: 'nested item 2' },
+            ],
+        },
+        { id: '4', content: 'Item 4' },
+        { id: '5', content: 'Item 5' },
+    ]);
+    const [activeId, SetActiveId] = useState<UniqueIdentifier | null>(null);
+    const mouseSensor = useSensor(MouseSensor);
+    const touchSensor = useSensor(TouchSensor);
+    const keyboardSensor = useSensor(KeyboardSensor);
 
-        // 4. THE REST (Valid DOM attributes + Drag listeners)
-        ...rest
-    } = props;
+    const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
+
+    const handleDragStart = (event: DragStartEvent) => {
+        SetActiveId(event.active.id);
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        SetActiveId(null);
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) return;
+
+        setItems((items) => {
+            const oldIndex = items.findIndex((item) => item.id === active.id);
+            const newIndex = items.findIndex((item) => item.id === over.id);
+
+            // This returns a new array with the item moved to the new position
+            return arrayMove(items, oldIndex, newIndex);
+        });
+    };
+
+    const getActiveItem = () => {
+        return items.find((item) => item.id === activeId)?.content;
+    };
+
+    const handleDragCancel = (event: DragCancelEvent) => {
+        void event;
+
+        SetActiveId(null);
+    };
 
     return (
-        <div
-            ref={ref}
-            style={{
-                ...style,
-                marginLeft: `${depth * 20}px`,
-            }}
-            // 'rest' now only contains standard attributes (id, tabIndex)
-            // and drag-and-drop listeners (onPointerDown, etc.)
-            {...rest}
-            className={`p-2 border rounded mb-1 cursor-pointer transition-colors shadow-sm flex items-center justify-between 
-                ${active ? 'bg-slate-100 border-primary' : 'bg-white hover:bg-slate-50'}`}
-        >
-            <div className="flex items-center gap-2">
-                {/* Visual feedback for collapsed state */}
-                {childCount > 0 && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation(); // Prevent selecting the item when toggling
-                            onCollapse?.();
-                        }}
-                        className="p-1 hover:bg-slate-200 rounded text-[10px]"
-                    >
-                        {collapsed ? '▶' : '▼'}
-                    </button>
-                )}
+        <div className="mx-auto w-full max-w-4xl rounded-lg border bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+            <h2 className="mb-4 text-xl font-bold dark:text-white">
+                Sortable List
+            </h2>
 
-                <span className="text-sm font-medium">{item.title}</span>
-
-                {childCount > 0 && (
-                    <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded-full text-slate-500 font-bold">
-                        {childCount}
-                    </span>
-                )}
-            </div>
+            <DndContext
+                sensors={sensors}
+                onDragEnd={handleDragEnd}
+                onDragStart={handleDragStart}
+                onDragCancel={handleDragCancel}
+                collisionDetection={closestCenter}
+            >
+                <SortableContext
+                    items={items.map((item) => item.id)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    <ul className="space-y-2 p-4">
+                        {items.map((menu) => (
+                            <SortableItem
+                                key={menu.id}
+                                id={menu.id}
+                                content={menu.content}
+                                childrenItems={menu.children || []} // Pass the nested array
+                            />
+                        ))}
+                    </ul>
+                </SortableContext>
+                <DragOverlay
+                    adjustScale={true}
+                    dropAnimation={{
+                        duration: 150,
+                        easing: 'cubic-bezier(0.18,0.67,0.6,1.22)',
+                    }}
+                >
+                    {activeId ? (
+                        <div className="cursor-grabbing rounded-md border bg-blue-50 p-3 shadow-md dark:border-blue-800 dark:bg-blue-900/30">
+                            <div className="flex items-center gap-3">
+                                <span className="text-gray-500 dark:text-gray-400">
+                                    ⋮⋮
+                                </span>
+                                <span className="dark:text-gray-200">
+                                    {getActiveItem()}
+                                </span>
+                            </div>
+                        </div>
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
         </div>
     );
-});
-
-MinimalTreeItemInner.displayName = 'MinimalTreeItemInner';
-
-export const MinimalTreeItemComponent = MinimalTreeItemInner as React.FC<
-    TreeItemComponentProps<NavItemData>
->;
+}

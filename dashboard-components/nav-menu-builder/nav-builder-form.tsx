@@ -19,16 +19,10 @@ import {
 } from '@/services/NavmenuService';
 import { navigationFormSchema, TNavigationForm } from '@/types/navItems';
 import { zodResolver } from '@hookform/resolvers/zod';
-import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { MinimalTreeItemComponent } from './minimal-tree-item-container';
-
-const SortableTree = dynamic(
-    () => import('dnd-kit-sortable-tree').then((mod) => mod.SortableTree),
-    { ssr: false },
-);
 
 export default function NavMenuBuilder() {
     const [navigationMenu, setNavigationMenu] = useState<TNavigationForm>();
@@ -212,14 +206,8 @@ export default function NavMenuBuilder() {
                                         No items added yet.
                                     </div>
                                 ) : (
-                                    <SortableTree
-                                        items={menuItems}
-                                        onItemsChanged={(newItems) =>
-                                            form.setValue('items', newItems)
-                                        }
-                                        TreeItemComponent={
-                                            MinimalTreeItemComponent as any
-                                        }
+                                    <MinimalTreeItemComponent
+                                        menuItems={menuItems}
                                     />
                                 )}
                             </CardContent>

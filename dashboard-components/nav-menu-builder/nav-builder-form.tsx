@@ -22,7 +22,7 @@ import {
 import { navigationFormSchema, TNavigationForm } from '@/types/navItems';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { MinimalTreeItemComponent } from './minimal-tree-item-container';
@@ -45,6 +45,7 @@ export default function NavMenuBuilder() {
     });
 
     const menuItems = form.watch('items');
+    const menuNameValue = form.watch('menuName');
 
     /* ------------------ ADD MANUAL LINK ------------------ */
     const addManualItem = () => {
@@ -59,6 +60,7 @@ export default function NavMenuBuilder() {
                 title,
                 url: url || '#',
                 type: 'link',
+                category: [],
             },
             children: [],
         };
@@ -72,12 +74,12 @@ export default function NavMenuBuilder() {
         });
 
         // Also updating the local form state as you were doing
-        form.setValue('items', [...menuItems, newItem]);
+        // form.setValue('items', [...menuItems, newItem]);
     };
 
     /* ------------------ CATEGORY TOGGLE ------------------ */
     const handleCategoryToggle = (cat: any) => {
-        const exists = menuItems.find((i) => i.id === cat._id);
+        const exists = menuItems.find((i) => i.id === cat.id);
 
         if (exists) {
             form.setValue(
@@ -88,11 +90,11 @@ export default function NavMenuBuilder() {
             form.setValue('items', [
                 ...menuItems,
                 {
-                    id: cat._id,
+                    id: cat.id,
                     data: {
-                        title: cat.title,
+                        title: cat.data.title,
                         type: 'category',
-                        category: cat._id,
+                        category: [],
                     },
                     children: [],
                 },
@@ -129,12 +131,28 @@ export default function NavMenuBuilder() {
     /* ------------------ SUBMIT ------------------ */
     const onSubmit = async (data: TNavigationForm) => {
         try {
-            console.log('data', menuItems, navigationMenu);
             const res = await createNavigationApi(data);
+            console.log(res);
             res.success ? toast.success(res.message) : toast.error(res.message);
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const handleTreeUpdate = (
+        update: SetStateAction<TreeItems[] | undefined>,
+    ) => {
+        // 1. Calculate the new value
+        // Since 'update' can be a function (prev => ...) or a direct value, we handle both
+        const newValue =
+            typeof update === 'function' ? update(menuItems) : update;
+
+        // 2. Update the React Hook Form state
+        // This triggers a re-render because 'menuItems' is being watched
+        form.setValue('items', newValue || [], {
+            shouldValidate: true,
+            shouldDirty: true,
+        });
     };
 
     const handleDeleteCategory = async (menuId: string) => {
@@ -168,7 +186,6 @@ export default function NavMenuBuilder() {
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        value={'Main Navigation'}
                                         placeholder="Enter Menu name"
                                     />
                                 </FormControl>
@@ -213,30 +230,28 @@ export default function NavMenuBuilder() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {navMenu && (
-                                    <div className="flex justify-between">
-                                        <h1 className="font-bold">
-                                            {navMenu?.menuName}
-                                        </h1>
-                                        {/* Delete Button */}
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
-                                            onClick={(e) => {
-                                                e.preventDefault(); // Prevent checkbox toggle if nested
-                                                handleDeleteCategory('1');
-                                            }}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                )}
+                                <div className="flex justify-between">
+                                    <h1 className="font-bold">
+                                        {menuNameValue}
+                                    </h1>
+                                    {/* Delete Button */}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                                        onClick={(e) => {
+                                            e.preventDefault(); // Prevent checkbox toggle if nested
+                                            handleDeleteCategory('1');
+                                        }}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
 
-                                {navMenu &&
-                                    navMenu.items?.map((cat) => (
+                                {navigationMenu &&
+                                    navigationMenu?.map((cat) => (
                                         <div
-                                            key={cat._id}
+                                            key={cat.id}
                                             className="flex items-center space-x-2 group" // added group for hover effects
                                         >
                                             <Checkbox
@@ -245,12 +260,12 @@ export default function NavMenuBuilder() {
                                                     handleCategoryToggle(cat)
                                                 }
                                                 checked={menuItems.some(
-                                                    (i) => i.id === cat._id,
+                                                    (i) => i.id === cat.id,
                                                 )}
                                             />
 
                                             <Label
-                                                htmlFor={cat._id}
+                                                htmlFor={cat.id}
                                                 className="flex-1 cursor-pointer"
                                             >
                                                 {cat.data.title}
@@ -268,15 +283,14 @@ export default function NavMenuBuilder() {
                                 <CardTitle>Menu Structure</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {navigationMenu &&
-                                navigationMenu.length === 0 ? (
+                                {menuItems && menuItems.length === 0 ? (
                                     <div className="text-center py-20 border-2 border-dashed rounded-lg text-muted-foreground">
                                         No items added yet.
                                     </div>
                                 ) : (
                                     <MinimalTreeItemComponent
-                                        menuItems={navigationMenu}
-                                        setMenuItems={setNavigationMenu}
+                                        menuItems={menuItems}
+                                        setMenuItems={handleTreeUpdate}
                                     />
                                 )}
                             </CardContent>

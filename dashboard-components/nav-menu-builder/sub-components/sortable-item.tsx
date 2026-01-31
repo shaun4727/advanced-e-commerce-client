@@ -1,6 +1,6 @@
 'use client';
 
-import { TreeItem } from '@/lib/sortable-tree-utilites';
+import { TreeItems } from '@/lib/sortable-tree-utilites';
 import { useDroppable } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -9,7 +9,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export function SortableItem({ item }: { item: TreeItem }) {
+export function SortableItem({ item }: { item: TreeItems }) {
     // SORTABLE (reorder)
     const {
         attributes,
@@ -56,11 +56,13 @@ export function SortableItem({ item }: { item: TreeItem }) {
             {item.children && item.children.length > 0 && (
                 <div className="ml-6 border-l pl-3">
                     <SortableContext
-                        items={item.children.map((c) => `item:${c.id}`)}
+                        items={item.children.map(
+                            (c: TreeItems) => `item:${c.id}`,
+                        )}
                         strategy={verticalListSortingStrategy}
                     >
                         <ul className="space-y-1">
-                            {item.children.map((child) => (
+                            {item.children.map((child: TreeItems) => (
                                 <SortableItem key={child.id} item={child} />
                             ))}
                         </ul>

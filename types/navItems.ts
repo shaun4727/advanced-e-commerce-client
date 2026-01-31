@@ -4,7 +4,7 @@ export interface INavItem {
     title: string; // Display name (e.g., "Men's Fashion")
     url?: string; // Custom URL if not a category
     category?: string; // Reference to your ICategory
-    type: 'link' | 'category' | 'mega-menu';
+    type: string;
     children: INavItem[]; // The nested tree structure
     isOpenNewTab: boolean;
 }
@@ -23,10 +23,14 @@ export interface INavigation {
 export const navItemInternalSchema: z.ZodType<any> = z.lazy(() =>
     z.object({
         id: z.string(),
-        title: z.string().min(1, 'Title is required'),
+        data: z.object({
+            title: z.string().min(1, 'Title is required'),
+            type: z.string().optional(),
+            category: z.array(z.string()).default([]),
+        }),
+
         url: z.string().optional().or(z.literal('')),
-        category: z.string().optional(),
-        type: z.string(),
+
         isOpenNewTab: z.boolean().default(false),
         children: z.array(navItemInternalSchema).default([]),
     }),

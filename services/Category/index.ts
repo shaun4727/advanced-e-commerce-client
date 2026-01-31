@@ -7,7 +7,6 @@ import { cookies } from 'next/headers';
 // create category
 export const createCategory = async (data: FormData) => {
     try {
-        console.log(data);
         const res = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_API}/category`,
             {

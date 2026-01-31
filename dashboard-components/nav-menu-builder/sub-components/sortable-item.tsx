@@ -1,91 +1,72 @@
-import { UniqueIdentifier } from '@dnd-kit/core';
+'use client';
+
+import { TreeItem } from '@/lib/sortable-tree-utilites';
+import { useDroppable } from '@dnd-kit/core';
 import {
     SortableContext,
     useSortable,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-interface recItems {
-    id: string;
-    content: string;
-    children?: recItems[];
-}
-
-export const SortableItem = ({
-    id,
-    content,
-    childrenItems,
-}: {
-    id: UniqueIdentifier;
-    content: string;
-    childrenItems: recItems[];
-}) => {
+export function SortableItem({ item }: { item: TreeItem }) {
+    // SORTABLE (reorder)
     const {
-        setNodeRef,
-        listeners,
         attributes,
+        listeners,
+        setNodeRef,
         transform,
         transition,
         isDragging,
-        isOver, // Useful for visual feedback when nesting
-    } = useSortable({ id });
+    } = useSortable({
+        id: `item:${item.id}`,
+    });
+
+    // DROPPABLE (nest)
+    const { setNodeRef: setNestRef, isOver } = useDroppable({
+        id: `nest:${item.id}`,
+    });
 
     const style = {
-        transform: transform
-            ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-            : undefined,
+        transform: CSS.Transform.toString(transform),
         transition,
     };
 
     return (
-        <li
-            ref={setNodeRef}
-            style={style}
-            // Removed listeners from here to avoid parent/child click conflicts
-            className={`list-none my-2 ${isDragging ? 'z-50' : 'z-0'}`}
-        >
+        <li ref={setNodeRef} style={style} className="list-none">
+            {/* ITEM BODY (NEST TARGET) */}
             <div
-                className={`flex items-center gap-3 rounded-md border bg-white p-3 shadow-sm transition-colors 
-                ${isDragging ? 'opacity-50' : 'opacity-100'} 
-                ${isOver ? 'border-blue-500 bg-blue-50' : 'dark:border-gray-700 dark:bg-gray-800'}`}
+                ref={setNestRef}
+                className={`flex items-center gap-2 rounded border p-2 mb-1 transition
+                    ${isDragging ? 'opacity-50' : ''}
+                    ${isOver ? 'bg-blue-100 border-blue-500' : 'bg-white'}
+                `}
             >
-                {/* DRAG HANDLE: Move listeners here for precise control */}
                 <button
                     {...attributes}
                     {...listeners}
-                    className="cursor-grab touch-none p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                    className="cursor-grab px-2 text-gray-500"
                 >
-                    <span className="text-gray-500 dark:text-gray-400">⋮⋮</span>
+                    ⋮⋮
                 </button>
-
-                <span className="dark:text-gray-200 select-none flex-1">
-                    {content}
-                </span>
+                <span>{item.data.title}</span>
             </div>
 
-            {/* NESTED DROP ZONE */}
-            {/* We render the container even if childrenItems is empty to allow for nesting */}
-            <div
-                className={`ml-8 mt-2 border-l-2 border-dashed border-gray-100 pl-4 transition-all
-                ${childrenItems.length === 0 ? 'h-1 py-1' : 'h-auto'} 
-                dark:border-gray-700`}
-            >
-                <SortableContext
-                    items={childrenItems.map((child) => child.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    <ul className="space-y-2">
-                        {childrenItems.map((child) => (
-                            <SortableItem
-                                key={child.id}
-                                id={child.id}
-                                content={child.content}
-                                childrenItems={child.children || []}
-                            />
-                        ))}
-                    </ul>
-                </SortableContext>
-            </div>
+            {/* CHILDREN */}
+            {item.children && item.children.length > 0 && (
+                <div className="ml-6 border-l pl-3">
+                    <SortableContext
+                        items={item.children.map((c) => `item:${c.id}`)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <ul className="space-y-1">
+                            {item.children.map((child) => (
+                                <SortableItem key={child.id} item={child} />
+                            ))}
+                        </ul>
+                    </SortableContext>
+                </div>
+            )}
         </li>
     );
-};
+}

@@ -10,6 +10,7 @@ export interface INavItem {
 }
 
 export interface INavigation {
+    _id: string;
     menuName: string; // e.g., "Main Header"
     items: INavItem[];
     isActive: boolean;
@@ -34,6 +35,7 @@ export const navItemInternalSchema: z.ZodType<any> = z.lazy(() =>
 // 2. THE FORM SCHEMA (The one passed to zodResolver)
 // This is NOT recursive at the top level, so TS can validate the object keys.
 export const navigationFormSchema = z.object({
+    _id: z.string().optional(),
     menuName: z.string().min(1, 'Menu name is required'),
     items: z.array(navItemInternalSchema),
     // Add these for UI state only

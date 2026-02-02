@@ -1,31 +1,37 @@
 'use client';
 
+import { IProduct } from '@/types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { ProductCard } from './product-components/product-card';
 
-export const TrendingProducts = () => {
+export const TrendingProducts = ({
+    trendingProducts,
+}: {
+    trendingProducts: IProduct[];
+}) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const itemsPerView = 4;
 
     const router = useRouter();
 
-    const products = [1, 2, 3, 4, 5, 6, 7];
-
     const nextSlide = () => {
         setCurrentIndex(
             (prev) =>
-                (prev + 1) % Math.max(1, products.length - itemsPerView + 1),
+                (prev + 1) %
+                Math.max(1, trendingProducts.length - itemsPerView + 1),
         );
     };
 
     const prevSlide = () => {
         setCurrentIndex(
             (prev) =>
-                (prev - 1 + Math.max(1, products.length - itemsPerView + 1)) %
-                Math.max(1, products.length - itemsPerView + 1),
+                (prev -
+                    1 +
+                    Math.max(1, trendingProducts.length - itemsPerView + 1)) %
+                Math.max(1, trendingProducts.length - itemsPerView + 1),
         );
     };
 
@@ -54,7 +60,8 @@ export const TrendingProducts = () => {
                         onClick={nextSlide}
                         className="rounded-full hover:bg-gray-100"
                         disabled={
-                            currentIndex >= products.length - itemsPerView
+                            currentIndex >=
+                            trendingProducts.length - itemsPerView
                         }
                     >
                         <ChevronRight className="h-5 w-5" />
@@ -65,8 +72,8 @@ export const TrendingProducts = () => {
             <div className="relative">
                 {/* Mobile Grid */}
                 <div className="md:hidden grid grid-cols-2 gap-4">
-                    {products.map((_, index) => (
-                        <ProductCard key={index} />
+                    {trendingProducts.map((product: IProduct, index) => (
+                        <ProductCard key={index} product={product} />
                     ))}
                 </div>
                 {/* Desktop Grid */}
@@ -77,12 +84,12 @@ export const TrendingProducts = () => {
                             transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
                         }}
                     >
-                        {products?.map((_, index) => (
+                        {trendingProducts?.map((product: IProduct, index) => (
                             <div
                                 key={index}
                                 className="w-1/4 shrink-0 px-3 cursor-pointer"
                             >
-                                <ProductCard />
+                                <ProductCard product={product} />
                             </div>
                         ))}
                     </div>
@@ -93,7 +100,9 @@ export const TrendingProducts = () => {
             <div className="text-center mt-8">
                 <Button
                     variant="outline"
-                    onClick={() => {}}
+                    onClick={() => {
+                        router.push(`/products?trending=1`);
+                    }}
                     size="lg"
                     className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors duration-200"
                 >

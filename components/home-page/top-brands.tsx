@@ -2,19 +2,19 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+import { IBrand } from '@/types';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { BrandCard } from './brand-components/brand-card';
 
-export const TopBrandsComponent = () => {
+export const TopBrandsComponent = ({ allBrands }: { allBrands: IBrand[] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const itemsPerView = {
         mobile: 2,
         tablet: 3,
         desktop: 5,
     };
-    const dataBrands = [1, 2, 3, 4, 5, 6, 7];
 
     const router = useRouter();
 
@@ -22,7 +22,7 @@ export const TopBrandsComponent = () => {
         setCurrentIndex(
             (prev) =>
                 (prev + 1) %
-                Math.max(1, dataBrands.length - itemsPerView.desktop + 1),
+                Math.max(1, allBrands.length - itemsPerView.desktop + 1),
         );
     };
 
@@ -31,14 +31,10 @@ export const TopBrandsComponent = () => {
             (prev) =>
                 (prev -
                     1 +
-                    Math.max(1, dataBrands.length - itemsPerView.desktop + 1)) %
-                Math.max(1, dataBrands.length - itemsPerView.desktop + 1),
+                    Math.max(1, allBrands.length - itemsPerView.desktop + 1)) %
+                Math.max(1, allBrands.length - itemsPerView.desktop + 1),
         );
     };
-
-    //   const getProductsFromBrand = (product: IBrandWithProducts) => {
-    //     router.push(`/products?brands=${product._id}`);
-    //   };
 
     return (
         <div className="my-8 px-2.5">
@@ -70,7 +66,7 @@ export const TopBrandsComponent = () => {
                         className="rounded-full hover:bg-blue-50 hover:border-blue-300"
                         disabled={
                             currentIndex >=
-                            dataBrands.length - itemsPerView.desktop
+                            allBrands.length - itemsPerView.desktop
                         }
                     >
                         <ChevronRight className="h-4 w-4" />
@@ -88,12 +84,12 @@ export const TopBrandsComponent = () => {
                             transform: `translateX(-${currentIndex * (100 / itemsPerView.desktop)}%)`,
                         }}
                     >
-                        {dataBrands?.map((_, index) => (
+                        {allBrands?.map((brand, index) => (
                             <div
                                 key={index}
                                 className="w-1/5 shrink-0 px-3 cursor-pointer"
                             >
-                                <BrandCard />
+                                <BrandCard brand={brand} />
                             </div>
                         ))}
                     </div>
@@ -101,15 +97,15 @@ export const TopBrandsComponent = () => {
 
                 {/* Tablet Grid */}
                 <div className="hidden md:grid lg:hidden grid-cols-3 gap-6">
-                    {dataBrands?.slice(0, 6).map((_, index) => (
-                        <BrandCard key={index} />
+                    {allBrands?.slice(0, 6).map((brand, index) => (
+                        <BrandCard key={index} brand={brand} />
                     ))}
                 </div>
 
                 {/* Mobile Grid */}
                 <div className="md:hidden grid grid-cols-2 gap-4">
-                    {dataBrands?.slice(0, 4).map((_, index) => (
-                        <BrandCard key={index} />
+                    {allBrands?.slice(0, 4).map((brand, index) => (
+                        <BrandCard key={index} brand={brand} />
                     ))}
                 </div>
             </div>

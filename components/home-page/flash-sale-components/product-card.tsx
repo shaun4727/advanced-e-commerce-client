@@ -1,8 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { IProduct } from '@/types';
 import { Badge } from 'lucide-react';
 import Image from 'next/image';
 
-export const ProductCard = () => {
+export const ProductCard = ({ product }: { product: IProduct }) => {
     return (
         <div>
             <Card
@@ -13,7 +14,7 @@ export const ProductCard = () => {
                     {/* Product Image */}
                     <div className="relative aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
                         <Image
-                            src={'/placeholder.svg'}
+                            src={product.imageUrls?.[0] || '/placeholder.svg'}
                             alt={'product-img'}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -28,18 +29,18 @@ export const ProductCard = () => {
                     {/* Product Info */}
                     <div className="p-4">
                         <h3 className="font-medium text-gray-900 mb-3 line-clamp-2 leading-tight">
-                            Product Name
+                            {product.name}
                         </h3>
 
                         {/* Pricing */}
                         <div className="mb-3">
                             <div className="flex items-center space-x-2 mb-1">
                                 <span className="text-lg font-bold text-blue-600">
-                                    BDT {Number(0).toFixed(2)}
+                                    BDT {Number(product.offerPrice).toFixed(2)}
                                 </span>
                             </div>
                             <span className="text-sm text-gray-500 line-through">
-                                BDT {Number(0).toFixed(2)}
+                                BDT {Number(product.price).toFixed(2)}
                             </span>
                         </div>
 

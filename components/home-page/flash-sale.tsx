@@ -1,5 +1,6 @@
 'use client';
 
+import { IProduct } from '@/types';
 import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -7,29 +8,32 @@ import { Button } from '../ui/button';
 import { CountdownTimer } from './flash-sale-components/count-down-timer';
 import { ProductCard } from './flash-sale-components/product-card';
 
-export const FlashSale = () => {
+export const FlashSale = ({
+    flashSaleProducts,
+}: {
+    flashSaleProducts: IProduct[];
+}) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const itemsPerView = 4;
     const router = useRouter();
 
-    const products = [1, 2, 3, 4, 5, 6, 7];
-
     const nextSlide = () => {
         setCurrentIndex(
             (prev) =>
-                (prev + 1) % Math.max(1, products.length - itemsPerView + 1),
+                (prev + 1) %
+                Math.max(1, flashSaleProducts.length - itemsPerView + 1),
         );
     };
 
     const prevSlide = () => {
         setCurrentIndex(
             (prev) =>
-                (prev - 1 + Math.max(1, products.length - itemsPerView + 1)) %
-                Math.max(1, products.length - itemsPerView + 1),
+                (prev -
+                    1 +
+                    Math.max(1, flashSaleProducts.length - itemsPerView + 1)) %
+                Math.max(1, flashSaleProducts.length - itemsPerView + 1),
         );
     };
-
-    const flashProducts = [1, 2, 3, 4, 5, 6, 7, 8];
 
     return (
         <div className="w-full mt-16 px-2.5">
@@ -77,12 +81,12 @@ export const FlashSale = () => {
                             transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
                         }}
                     >
-                        {flashProducts?.map((_, index) => (
+                        {flashSaleProducts?.map((product: IProduct, index) => (
                             <div
                                 key={index}
                                 className="w-1/4 shrink-0 px-3 cursor-pointer"
                             >
-                                <ProductCard />
+                                <ProductCard product={product} />
                             </div>
                         ))}
                     </div>
@@ -91,9 +95,9 @@ export const FlashSale = () => {
                 {/* Mobile Scroll */}
                 <div className="md:hidden">
                     <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-                        {flashProducts?.map((_, index) => (
+                        {flashSaleProducts?.map((product: IProduct, index) => (
                             <div key={index} className="w-64 shrink-0">
-                                <ProductCard />
+                                <ProductCard product={product} />
                             </div>
                         ))}
                     </div>
@@ -104,7 +108,9 @@ export const FlashSale = () => {
             <div className="text-center mt-8">
                 <Button
                     variant="outline"
-                    onClick={() => {}}
+                    onClick={() => {
+                        router.push(`/products?flashSale=1`);
+                    }}
                     size="lg"
                     className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors duration-200"
                 >

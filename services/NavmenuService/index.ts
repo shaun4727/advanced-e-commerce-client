@@ -48,15 +48,12 @@ export const updateNavItemApi = async (data: {
 };
 
 export const getNavigationApi = async (): Promise<any> => {
-    const token = await getValidToken();
-
     const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_API}/navigation/get-menu`,
         {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json', // REQUIRED
-                Authorization: token,
             },
 
             next: {
@@ -69,15 +66,12 @@ export const getNavigationApi = async (): Promise<any> => {
 };
 
 export const getNavigationMenuApi = async (): Promise<any> => {
-    const token = await getValidToken();
-
     const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_API}/navigation/get-menu-not-dashboard`,
         {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json', // REQUIRED
-                Authorization: token,
             },
 
             next: {

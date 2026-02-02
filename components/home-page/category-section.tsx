@@ -1,9 +1,10 @@
-'use client';
-
+import { homePageBrandWithProduct } from '@/services/Brand';
+import { IBrand } from '@/types';
 import { CategoryCard } from './category-components/category-card';
-import { Categories } from './constants';
 
-export const CategorySection = () => {
+export const CategorySection = async () => {
+    const { data } = await homePageBrandWithProduct();
+
     return (
         <>
             {/* category section */}
@@ -20,17 +21,17 @@ export const CategorySection = () => {
                 </div>
 
                 <div className="flex gap-2.5 overflow-x-auto md:hidden">
-                    {Categories.map((category, index) => (
+                    {data.map((category: IBrand, index: number) => (
                         <div key={index} className="shrink-0 cursor-pointer">
-                            <CategoryCard />
+                            <CategoryCard category={category} />
                         </div>
                     ))}
                 </div>
 
                 <div className="hidden md:grid grid-cols-3 lg:grid-cols-5 xl:grid-cols-4 gap-6">
-                    {Categories?.map((_, index) => (
-                        <div onClick={() => {}} key={index}>
-                            <CategoryCard />
+                    {data?.map((category: IBrand, index: number) => (
+                        <div key={index}>
+                            <CategoryCard category={category} />
                         </div>
                     ))}
                 </div>

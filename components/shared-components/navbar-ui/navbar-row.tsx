@@ -131,126 +131,69 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
                             {/* Navigation */}
                             <Accordion
                                 type="multiple"
-                                defaultValue={['electronics']}
                                 className="px-3 py-2 space-y-2"
                             >
                                 {/* CATEGORY */}
-                                <AccordionItem
-                                    value="electronics"
-                                    className="border-b border-blue-600/20"
-                                >
-                                    <AccordionTrigger className="hover:no-underline">
-                                        <span className="text-blue-700 font-semibold text-sm">
-                                            Electronics & Others
-                                        </span>
-                                    </AccordionTrigger>
-
-                                    <AccordionContent className="pl-2">
-                                        {/* SUB CATEGORY */}
-                                        <AccordionItem
-                                            value="accessories"
-                                            className="border-none"
+                                {menu?.map((menuItems) => (
+                                    <AccordionItem
+                                        key={menuItems._id}
+                                        value={menuItems.data.title}
+                                        className="border-b border-blue-600/20"
+                                    >
+                                        <AccordionTrigger
+                                            className={`hover:no-underline ${menuItems.children.length === 0 ? '[&>svg]:hidden pointer-events-none' : ''}`}
                                         >
-                                            <AccordionTrigger className="py-2 hover:no-underline">
-                                                <span className="text-blue-600 font-medium text-sm">
-                                                    Home Accessories
-                                                </span>
-                                            </AccordionTrigger>
+                                            <span className="text-blue-700 font-semibold text-sm">
+                                                {menuItems.data.title}
+                                            </span>
+                                        </AccordionTrigger>
 
-                                            <AccordionContent>
-                                                <ul className="ml-3 mt-1 space-y-1">
-                                                    {[
-                                                        'Something',
-                                                        'Something',
-                                                        'Something',
-                                                    ].map((item, i) => (
-                                                        <li
-                                                            key={i}
-                                                            className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer"
-                                                        >
-                                                            {item}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                        <AccordionContent className="pl-2">
+                                            {/* SUB CATEGORY */}
+                                            {menuItems.children?.map(
+                                                (subItem) => (
+                                                    <AccordionItem
+                                                        value={
+                                                            subItem.data.title
+                                                        }
+                                                        className="border-none"
+                                                    >
+                                                        <AccordionTrigger className="py-2 hover:no-underline">
+                                                            <span className="text-blue-600 font-medium text-sm">
+                                                                {
+                                                                    subItem.data
+                                                                        .title
+                                                                }
+                                                            </span>
+                                                        </AccordionTrigger>
 
-                                {/* CATEGORY 2 */}
-                                <AccordionItem
-                                    value="category-2"
-                                    className="border-b border-blue-600/20"
-                                >
-                                    <AccordionTrigger className="hover:no-underline">
-                                        <span className="text-blue-700 font-semibold text-sm">
-                                            Category 2
-                                        </span>
-                                    </AccordionTrigger>
-
-                                    <AccordionContent className="pl-2">
-                                        <AccordionItem
-                                            value="sub-2"
-                                            className="border-none"
-                                        >
-                                            <AccordionTrigger className="py-2 hover:no-underline">
-                                                <span className="text-blue-600 font-medium text-sm">
-                                                    Sub Category
-                                                </span>
-                                            </AccordionTrigger>
-
-                                            <AccordionContent>
-                                                <ul className="ml-3 mt-1 space-y-1">
-                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
-                                                        Something
-                                                    </li>
-                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
-                                                        Something
-                                                    </li>
-                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
-                                                        Something
-                                                    </li>
-                                                </ul>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                {/* CATEGORY 3 */}
-                                <AccordionItem value="category-3">
-                                    <AccordionTrigger className="hover:no-underline">
-                                        <span className="text-blue-700 font-semibold text-sm">
-                                            Category 3
-                                        </span>
-                                    </AccordionTrigger>
-
-                                    <AccordionContent className="pl-2">
-                                        <AccordionItem
-                                            value="sub-3"
-                                            className="border-none"
-                                        >
-                                            <AccordionTrigger className="py-2 hover:no-underline">
-                                                <span className="text-blue-600 font-medium text-sm">
-                                                    Sub Category
-                                                </span>
-                                            </AccordionTrigger>
-
-                                            <AccordionContent>
-                                                <ul className="ml-3 mt-1 space-y-1">
-                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
-                                                        Something
-                                                    </li>
-                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
-                                                        Something
-                                                    </li>
-                                                    <li className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer">
-                                                        Something
-                                                    </li>
-                                                </ul>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                                        <AccordionContent>
+                                                            <ul className="ml-3 mt-1 space-y-1">
+                                                                {subItem.data.category.map(
+                                                                    (
+                                                                        cat,
+                                                                        i,
+                                                                    ) => (
+                                                                        <li
+                                                                            key={
+                                                                                i
+                                                                            }
+                                                                            className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer"
+                                                                        >
+                                                                            {
+                                                                                cat.name
+                                                                            }
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                ),
+                                            )}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
                             </Accordion>
                         </DrawerContent>
                     </Drawer>

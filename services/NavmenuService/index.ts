@@ -1,8 +1,8 @@
 'use server';
 
 import { getValidToken } from '@/lib/verifyToken';
-import { TNavigationForm } from '@/types/navItems';
-import { revalidateTag, updateTag } from 'next/cache';
+import { navSubItem, TNavigationForm } from '@/types/navItems';
+import { updateTag } from 'next/cache';
 
 export const createNavigationApi = async (
     data: TNavigationForm,
@@ -20,7 +20,29 @@ export const createNavigationApi = async (
             body: JSON.stringify(data), // Send the object directly
         },
     );
-    revalidateTag('GET_NAVIGATION_MENU', 'max');
+    updateTag('GET_NAVIGATION_MENU');
+
+    return res.json();
+};
+
+export const updateNavItemApi = async (data: {
+    id: string;
+    navItem: navSubItem;
+}): Promise<any> => {
+    const token = await getValidToken();
+
+    const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_API}/navigation/update-nav-menu`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // REQUIRED
+                Authorization: token,
+            },
+            body: JSON.stringify(data), // Send the object directly
+        },
+    );
+    updateTag('GET_NAVIGATION_MENU');
 
     return res.json();
 };

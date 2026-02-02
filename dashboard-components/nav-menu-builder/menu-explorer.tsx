@@ -3,7 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { deleteNavigationApi } from '@/services/NavmenuService';
+import {
+    deleteNavigationApi,
+    updateNavItemApi,
+} from '@/services/NavmenuService';
 import { ICategory } from '@/types';
 import { navSubItem, TNavigationForm } from '@/types/navItems';
 import { Trash2 } from 'lucide-react';
@@ -59,10 +62,54 @@ export const MenuExplorer = ({
     };
 
     // 4. Log or Save
-    const updateCategories = () => {
-        console.log('Selected Categories for Target:', selectedCatIds);
-        // Here you would call your recursive update function to update the navMenu
+    const updateCategories = async () => {
+        // 1. Guard clause
+        if (!selectedNavItem) {
+            toast.error('Please select a menu item first');
+            return;
+        }
+
+        try {
+            // 2. Prepare the updated Nav Item data locally
+            // We do this instead of relying on the state update to be "instant"
+            const updatedNavItem: navSubItem = {
+                ...selectedNavItem,
+                data: {
+                    ...selectedNavItem.data,
+                    // Use a Set to ensure unique category IDs
+                    category: Array.from(
+                        new Set([
+                            ...(selectedNavItem.data.category || []),
+                            ...selectedCatIds,
+                        ]),
+                    ),
+                },
+            };
+
+            // 3. Prepare the payload for the API
+            const formData = {
+                id: navMenu._id as string,
+                navItem: updatedNavItem,
+            };
+
+            // 4. Call the API
+            const res = await updateNavItemApi(formData);
+
+            if (res.success) {
+                // 5. Update local state ONLY after successful API call
+                setSelectedNavItem(updatedNavItem);
+                toast.success(res.message);
+                router.refresh();
+            } else {
+                toast.error(res.message);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('An error occurred while updating categories');
+        }
     };
+
+    console.log(selectedNavItem);
     return (
         <div>
             {/* PREVIEW SECTION */}

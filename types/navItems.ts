@@ -51,3 +51,15 @@ export type TNavigationForm = z.infer<typeof navigationFormSchema>;
 
 // Infer the TypeScript type from the Zod schema
 export type TNavItem = z.infer<typeof navItemInternalSchema>;
+
+export interface navSubItem {
+    _id: string;
+    id: string;
+    data: {
+        title: string;
+        category: string[];
+    };
+    url: string;
+    isOpenNewTab: boolean;
+    children: navSubItem[];
+}

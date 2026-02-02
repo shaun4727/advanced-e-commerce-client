@@ -16,12 +16,10 @@ import { Label } from '@/components/ui/label';
 import { TreeItems } from '@/lib/sortable-tree-utilites';
 import {
     createNavigationApi,
-    deleteNavigationApi,
     getNavigationApi,
 } from '@/services/NavmenuService';
 import { navigationFormSchema, TNavigationForm } from '@/types/navItems';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Trash2 } from 'lucide-react';
 import { SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -110,12 +108,13 @@ export default function NavMenuBuilder() {
                 if (res.success) {
                     const navMenu = res.data;
 
-                    navMenu?.find(
+                    const nav = navMenu?.find(
                         (nav: TNavigationForm) =>
                             nav.menuName === 'Main Navigation',
                     );
-                    if (navMenu) {
-                        setNavMenu(navMenu);
+
+                    if (nav) {
+                        setNavMenu(nav);
                     } else {
                         setNavMenu(undefined);
                     }
@@ -132,7 +131,7 @@ export default function NavMenuBuilder() {
     const onSubmit = async (data: TNavigationForm) => {
         try {
             const res = await createNavigationApi(data);
-            console.log(res);
+            form.reset();
             res.success ? toast.success(res.message) : toast.error(res.message);
         } catch (err) {
             console.error(err);
@@ -155,155 +154,134 @@ export default function NavMenuBuilder() {
         });
     };
 
-    const handleDeleteCategory = async (menuId: string) => {
-        try {
-            if (menuId == '1') {
-                setNavigationMenu([]);
-                return;
-            }
-            const res = await deleteNavigationApi(menuId);
-            if (res.success) {
-                toast.success(res.message);
-            } else {
-                toast.error(res.message);
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    };
-
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* MENU META */}
-                <div className="max-w-xs">
-                    <FormField
-                        control={form.control}
-                        name="menuName"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Menu Name</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        {...field}
-                                        placeholder="Enter Menu name"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* LEFT */}
-                    <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-sm">
-                                    Add Custom Link
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <Input
-                                    placeholder="Item Label"
-                                    {...form.register('tempTitle')}
-                                />
-                                <Input
-                                    placeholder="URL"
-                                    {...form.register('tempUrl')}
-                                />
-                                <Button
-                                    type="button"
-                                    onClick={addManualItem}
-                                    className="w-full"
-                                >
-                                    Add to Menu
-                                </Button>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-sm">
-                                    Quick Add Categories
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex justify-between">
-                                    <h1 className="font-bold">
-                                        {menuNameValue}
-                                    </h1>
-                                    {/* Delete Button */}
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
-                                        onClick={(e) => {
-                                            e.preventDefault(); // Prevent checkbox toggle if nested
-                                            handleDeleteCategory('1');
-                                        }}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-
-                                {navigationMenu &&
-                                    navigationMenu?.map((cat) => (
-                                        <div
-                                            key={cat.id}
-                                            className="flex items-center space-x-2 group" // added group for hover effects
-                                        >
-                                            <Checkbox
-                                                id={cat._id}
-                                                onCheckedChange={() =>
-                                                    handleCategoryToggle(cat)
-                                                }
-                                                checked={menuItems.some(
-                                                    (i) => i.id === cat.id,
-                                                )}
-                                            />
-
-                                            <Label
-                                                htmlFor={cat.id}
-                                                className="flex-1 cursor-pointer"
-                                            >
-                                                {cat.data.title}
-                                            </Label>
-                                        </div>
-                                    ))}
-                            </CardContent>
-                        </Card>
+        <>
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-8"
+                >
+                    {/* MENU META */}
+                    <div className="max-w-xs">
+                        <FormField
+                            control={form.control}
+                            name="menuName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Menu Name</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter Menu name"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                     </div>
 
-                    {/* RIGHT */}
-                    <div className="md:col-span-2">
-                        <Card className="min-h-[500px]">
-                            <CardHeader>
-                                <CardTitle>Menu Structure</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {menuItems && menuItems.length === 0 ? (
-                                    <div className="text-center py-20 border-2 border-dashed rounded-lg text-muted-foreground">
-                                        No items added yet.
-                                    </div>
-                                ) : (
-                                    <MinimalTreeItemComponent
-                                        menuItems={menuItems}
-                                        setMenuItems={handleTreeUpdate}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* LEFT */}
+                        <div className="space-y-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-sm">
+                                        Add Custom Link
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <Input
+                                        placeholder="Item Label"
+                                        {...form.register('tempTitle')}
                                     />
-                                )}
-                            </CardContent>
-                        </Card>
+                                    <Input
+                                        placeholder="URL"
+                                        {...form.register('tempUrl')}
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={addManualItem}
+                                        className="w-full"
+                                    >
+                                        Add to Menu
+                                    </Button>
+                                </CardContent>
+                            </Card>
 
-                        <div className="mt-4 flex justify-end">
-                            <Button type="submit" size="lg">
-                                Save Menu Configuration
-                            </Button>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-sm">
+                                        Quick Add Categories
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex justify-between">
+                                        <h1 className="font-bold">
+                                            {menuNameValue}
+                                        </h1>
+                                        {/* Delete Button */}
+                                    </div>
+
+                                    {navigationMenu &&
+                                        navigationMenu?.map((cat) => (
+                                            <div
+                                                key={cat.id}
+                                                className="flex items-center space-x-2 group" // added group for hover effects
+                                            >
+                                                <Checkbox
+                                                    id={cat._id}
+                                                    onCheckedChange={() =>
+                                                        handleCategoryToggle(
+                                                            cat,
+                                                        )
+                                                    }
+                                                    checked={menuItems.some(
+                                                        (i) => i.id === cat.id,
+                                                    )}
+                                                />
+
+                                                <Label
+                                                    htmlFor={cat.id}
+                                                    className="flex-1 cursor-pointer"
+                                                >
+                                                    {cat.data.title}
+                                                </Label>
+                                            </div>
+                                        ))}
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* RIGHT */}
+                        <div className="md:col-span-2">
+                            <Card className="min-h-[500px]">
+                                <CardHeader>
+                                    <CardTitle>Menu Structure</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {menuItems && menuItems.length === 0 ? (
+                                        <div className="text-center py-20 border-2 border-dashed rounded-lg text-muted-foreground">
+                                            No items added yet.
+                                        </div>
+                                    ) : (
+                                        <MinimalTreeItemComponent
+                                            menuItems={menuItems}
+                                            setMenuItems={handleTreeUpdate}
+                                        />
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            <div className="mt-4 flex justify-end">
+                                <Button type="submit" size="lg">
+                                    Save Menu Configuration
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        </Form>
+                </form>
+            </Form>
+        </>
     );
 }

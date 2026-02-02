@@ -2,11 +2,34 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getNavigationMenuApi } from '@/services/NavmenuService';
 import { Search, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { NavigationRow } from './navbar-row';
 
 export const NavBar = () => {
+    const [navigationMenu, setNavigationMenu] = useState([]);
+
+    const getNavigationMenuMethod = async () => {
+        try {
+            const res = await getNavigationMenuApi();
+
+            if (res.success) {
+                setNavigationMenu(res.data?.[0]?.items);
+            } else {
+                toast.error(res.data.message);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    useEffect(() => {
+        getNavigationMenuMethod();
+    }, []);
+
     return (
         <header className="sticky top-0 z-30">
             <div className="bg-blue-700 flex flex-col justify-center items-center gap-2 py-2 md:flex-row md:gap-4 md:justify-between px-16  overflow-hidden">
@@ -52,7 +75,7 @@ export const NavBar = () => {
                 </div>
             </div>
 
-            <NavigationRow />
+            <NavigationRow menu={navigationMenu} />
         </header>
     );
 };

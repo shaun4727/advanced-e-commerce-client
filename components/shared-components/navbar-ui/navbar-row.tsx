@@ -39,7 +39,35 @@ import { logout } from '@/services/AuthService';
 import { CreditCard, LogOut, Menu, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
-export function NavigationRow() {
+type catItem = {
+    _id: string;
+    name: string;
+    description: string;
+    icon: string;
+    slug: string;
+    // Added fields found in your JSON
+    parent?: string | null;
+    isActive: boolean;
+    createdBy: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+};
+
+type childData = {
+    title: string;
+    category: catItem[];
+    type: string;
+};
+
+type navItem = {
+    _id: string;
+    data: childData;
+    isOpenNewTab: boolean;
+    children: navItem[];
+};
+
+export function NavigationRow({ menu }: { menu: navItem[] }) {
     const isMobile = useIsMobile();
     const { user, setIsLoading, setUser, isLoading } = useUser();
 
@@ -231,123 +259,83 @@ export function NavigationRow() {
                 <div className="bg-blue-600 flex py-3 gap-3 text-white max-w-none justify-between md:px-16">
                     <NavigationMenu>
                         <NavigationMenuList>
-                            <NavigationMenuItem>
-                                <Button className="cursor-pointer bg-blue-600 shadow-none text-white b-0 group inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 font-medium transition-colors hover:bg-blue-500 hover:text-white focus:bg-blue-500 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50  group text-md">
-                                    Home
-                                </Button>
-                            </NavigationMenuItem>
-                            <NavigationMenuItem>
-                                <NavigationMenuTrigger className="group data-[state=open]:text-white data-[state=open]:bg-blue-500 data-[state=open]:hover:bg-blue-500 data-[state=open]:focus:bg-blue-500 bg-blue-600 shadow-none text-white b-0 group inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 font-medium transition-colors hover:bg-blue-500 hover:text-white focus:bg-blue-500 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50  group text-md">
-                                    ELectronic & Others
-                                </NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <div className="flex p-4">
-                                        <div className="grid grid-cols-2 grid-rows-2 gap-4 w-xl p-4">
-                                            <div>
-                                                <h1 className="font-bold text-md border-b border-gray-200 pb-2">
-                                                    Home Accessories
-                                                </h1>
-                                                <ul className="pt-2">
-                                                    <li className="text-sm">
-                                                        Bedding
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Furniture
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Wall Art
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Lighting & Ceiling Fans
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div>
-                                                <h1 className="font-bold text-md border-b border-gray-200 pb-2">
-                                                    Computer
-                                                </h1>
-                                                <ul className="pt-2">
-                                                    <li className="text-sm">
-                                                        Bedding
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Furniture
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Wall Art
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Lighting & Ceiling Fans
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div>
-                                                <h1 className="font-bold text-md border-b border-gray-200 pb-2">
-                                                    Mobile Accessories
-                                                </h1>
-                                                <ul className="pt-2">
-                                                    <li className="text-sm">
-                                                        Bedding
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Furniture
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Wall Art
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Lighting & Ceiling Fans
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div>
-                                                <h1 className="font-bold text-md border-b border-gray-200 pb-2">
-                                                    Bags & Others
-                                                </h1>
-                                                <ul className="pt-2">
-                                                    <li className="text-sm">
-                                                        Bedding
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Furniture
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Wall Art
-                                                    </li>
-                                                    <li className="text-sm">
-                                                        Lighting & Ceiling Fans
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div className="inset-0 bg-black bg-opacity-20 w-xs rounded-lg flex items-end">
-                                            <div className="p-4 text-white">
-                                                <h4 className="font-semibold text-lg">
-                                                    New Collection
-                                                </h4>
-                                                <p className="text-sm opacity-90">
-                                                    Discover the latest trends
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </NavigationMenuContent>
-                            </NavigationMenuItem>
-                            <NavigationMenuItem className="mr-2">
-                                <Button className="cursor-pointer bg-blue-600 shadow-none text-white b-0 group inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 font-medium transition-colors hover:bg-blue-500 hover:text-white focus:bg-blue-500 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50  group text-md">
-                                    Fruits and Vegetables
-                                </Button>
-                            </NavigationMenuItem>
-                            <NavigationMenuItem>
-                                <Button className="cursor-pointer bg-blue-600 shadow-none text-white b-0 group inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 font-medium transition-colors hover:bg-blue-500 hover:text-white focus:bg-blue-500 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50  group text-md">
-                                    Watches
-                                </Button>
-                            </NavigationMenuItem>
-                            <NavigationMenuItem>
-                                <Button className="cursor-pointer bg-blue-600 shadow-none text-white b-0 group inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 font-medium transition-colors hover:bg-blue-500 hover:text-white focus:bg-blue-500 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50  group text-md">
-                                    Tshirt
-                                </Button>
-                            </NavigationMenuItem>
+                            {menu?.map((item) => {
+                                const hasChildren =
+                                    item.children && item.children.length > 0;
+
+                                return (
+                                    <NavigationMenuItem key={item._id}>
+                                        {hasChildren ? (
+                                            <>
+                                                <NavigationMenuTrigger className="group data-[state=open]:text-black data-[state=open]:bg-blue-500 bg-blue-600 text-white h-9 px-4 py-2 font-medium rounded-md hover:bg-blue-500 focus:bg-blue-500 focus:text-white focus:outline-none transition-colors text-md">
+                                                    {item.data.title}
+                                                </NavigationMenuTrigger>
+                                                <NavigationMenuContent>
+                                                    <div className="flex p-4">
+                                                        {/* Grid for Sub-categories (Children) */}
+                                                        <div className="grid grid-cols-2 gap-4 w-xl p-4">
+                                                            {item.children.map(
+                                                                (child) => (
+                                                                    <div
+                                                                        key={
+                                                                            child._id
+                                                                        }
+                                                                    >
+                                                                        <h1 className="font-bold text-md border-b border-gray-200 pb-2">
+                                                                            {
+                                                                                child
+                                                                                    .data
+                                                                                    .title
+                                                                            }
+                                                                        </h1>
+                                                                        <ul className="pt-2">
+                                                                            {child.data.category.map(
+                                                                                (
+                                                                                    cat,
+                                                                                ) => (
+                                                                                    <li
+                                                                                        key={
+                                                                                            cat._id
+                                                                                        }
+                                                                                        className="text-sm hover:text-blue-600 cursor-pointer"
+                                                                                    >
+                                                                                        {
+                                                                                            cat.name
+                                                                                        }
+                                                                                    </li>
+                                                                                ),
+                                                                            )}
+                                                                        </ul>
+                                                                    </div>
+                                                                ),
+                                                            )}
+                                                        </div>
+
+                                                        {/* Promo Section */}
+                                                        <div className="bg-slate-100 w-xs rounded-lg flex items-end p-4">
+                                                            <div>
+                                                                <h4 className="font-semibold text-lg text-black">
+                                                                    New
+                                                                    Collection
+                                                                </h4>
+                                                                <p className="text-sm text-gray-600">
+                                                                    Discover the
+                                                                    latest
+                                                                    trends
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </NavigationMenuContent>
+                                            </>
+                                        ) : (
+                                            <Button className="cursor-pointer bg-blue-600 text-white h-9 px-4 py-2 font-medium rounded-md hover:bg-blue-500 transition-colors text-md shadow-none">
+                                                {item.data.title}
+                                            </Button>
+                                        )}
+                                    </NavigationMenuItem>
+                                );
+                            })}
                         </NavigationMenuList>
                     </NavigationMenu>
                     {user && (

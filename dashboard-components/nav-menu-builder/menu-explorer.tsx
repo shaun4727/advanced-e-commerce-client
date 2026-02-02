@@ -109,7 +109,6 @@ export const MenuExplorer = ({
         }
     };
 
-    console.log(selectedNavItem);
     return (
         <div>
             {/* PREVIEW SECTION */}

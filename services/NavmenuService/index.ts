@@ -68,6 +68,27 @@ export const getNavigationApi = async (): Promise<any> => {
     return res.json();
 };
 
+export const getNavigationMenuApi = async (): Promise<any> => {
+    const token = await getValidToken();
+
+    const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_API}/navigation/get-menu-not-dashboard`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json', // REQUIRED
+                Authorization: token,
+            },
+
+            next: {
+                tags: ['GET_NAVIGATION_MENU'],
+            },
+        },
+    );
+
+    return res.json();
+};
+
 export const deleteNavigationApi = async (id: string): Promise<any> => {
     const token = await getValidToken();
 

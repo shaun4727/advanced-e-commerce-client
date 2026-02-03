@@ -37,7 +37,9 @@ import { useUser } from '@/context/UserContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { logout } from '@/services/AuthService';
 import { CreditCard, LogOut, Menu, X } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 type catItem = {
     _id: string;
@@ -71,6 +73,10 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
     const isMobile = useIsMobile();
     const { user, setIsLoading, setUser, isLoading } = useUser();
 
+    const [navUrl, setNavUrl] = useState<Record<string, string>>({
+        Home: '/',
+    });
+
     const router = useRouter();
     const pathname = usePathname();
 
@@ -90,6 +96,14 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
             }
         } catch (err) {
             console.log(err);
+        }
+    };
+
+    const handleNavigation = (item: navItem) => {
+        if (item.data.title === 'Home') {
+            router.push('/');
+        } else {
+            router.push(`/products?category=${item._id}`);
         }
     };
 
@@ -143,9 +157,25 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
                                         <AccordionTrigger
                                             className={`hover:no-underline ${menuItems.children.length === 0 ? '[&>svg]:hidden pointer-events-none' : ''}`}
                                         >
-                                            <span className="text-blue-700 font-semibold text-sm">
-                                                {menuItems.data.title}
-                                            </span>
+                                            {menuItems.children.length === 0 ? (
+                                                <Link
+                                                    href={
+                                                        navUrl[
+                                                            menuItems.data.title
+                                                        ] || '/'
+                                                    }
+                                                    className="text-blue-700 font-semibold text-sm w-full text-left"
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    } // Prevents the accordion from toggling
+                                                >
+                                                    {menuItems.data.title}
+                                                </Link>
+                                            ) : (
+                                                <span className="text-blue-700 font-semibold text-sm">
+                                                    {menuItems.data.title}
+                                                </span>
+                                            )}
                                         </AccordionTrigger>
 
                                         <AccordionContent className="pl-2">
@@ -272,7 +302,12 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
                                                 </NavigationMenuContent>
                                             </>
                                         ) : (
-                                            <Button className="cursor-pointer bg-blue-600 text-white h-9 px-4 py-2 font-medium rounded-md hover:bg-blue-500 transition-colors text-md shadow-none">
+                                            <Button
+                                                className="cursor-pointer bg-blue-600 text-white h-9 px-4 py-2 font-medium rounded-md hover:bg-blue-500 transition-colors text-md shadow-none"
+                                                onClick={() =>
+                                                    handleNavigation(item)
+                                                }
+                                            >
                                                 {item.data.title}
                                             </Button>
                                         )}

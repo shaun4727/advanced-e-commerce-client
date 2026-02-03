@@ -2,15 +2,25 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+    grandTotalSelector,
+    orderedProductsSelector,
+} from '@/redux/features/cartSlice';
+import { useAppSelector } from '@/redux/hooks';
 import { getNavigationMenuApi } from '@/services/NavmenuService';
 import { Search, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { NavigationRow } from './navbar-row';
 
 export const NavBar = () => {
     const [navigationMenu, setNavigationMenu] = useState([]);
+    const cartProducts = useAppSelector(orderedProductsSelector);
+    const grandTotal = useAppSelector(grandTotalSelector);
+    const router = useRouter();
+    const [searchValue, setSearchValue] = useState<string>('');
 
     const getNavigationMenuMethod = async () => {
         try {
@@ -24,6 +34,10 @@ export const NavBar = () => {
         } catch (err) {
             console.log(err);
         }
+    };
+
+    const searchProducts = () => {
+        router.push(`/products?searchTerm=${searchValue}`);
     };
 
     useEffect(() => {
@@ -43,11 +57,11 @@ export const NavBar = () => {
                         {/* consistent height for all children */}
                         <Input
                             placeholder="Search here..."
-                            onBlur={() => {}}
+                            onBlur={(e) => setSearchValue(e.target.value)}
                             className="bg-white rounded-r-none basis-64 md:flex-1"
                         />
                         <Button
-                            onClick={() => {}}
+                            onClick={searchProducts}
                             className="rounded-l-none bg-yellow-500 hover:bg-yellow-600 text-black"
                             aria-label="Search"
                         >
@@ -65,11 +79,11 @@ export const NavBar = () => {
                         <div className="relative w-8 h-8">
                             <ShoppingCart className="h-7 w-7 text-white" />
                             <div className="absolute top-0 right-0 bg-yellow-500 text-black rounded-full w-3 h-3 flex items-center justify-center text-xs md:p-2">
-                                4
+                                {cartProducts.length}
                             </div>
                         </div>
                         <span className="md:font-semibold text-white flex items-center">
-                            BDT {Number(200).toFixed(2)}
+                            BDT {Number(grandTotal).toFixed(2)}
                         </span>
                     </Link>
                 </div>

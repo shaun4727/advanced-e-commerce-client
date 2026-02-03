@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export const CategoryCard = ({ category }: { category: IBrand }) => {
     return (
-        <Link href={`/products`} className="group">
+        <Link href={`/products?brands=${category._id}`} className="group">
             <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white group-hover:scale-105">
                 <CardContent className="p-6 text-center">
                     {/* Icon Container */}

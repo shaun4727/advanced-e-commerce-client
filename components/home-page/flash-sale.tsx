@@ -35,6 +35,10 @@ export const FlashSale = ({
         );
     };
 
+    const viewProduct = (product: IProduct) => {
+        router.push(`/products/${product._id}`);
+    };
+
     return (
         <div className="w-full mt-16 px-2.5">
             <div className="flex items-center justify-between mb-8">
@@ -85,6 +89,7 @@ export const FlashSale = ({
                             <div
                                 key={index}
                                 className="w-1/4 shrink-0 px-3 cursor-pointer"
+                                onClick={() => viewProduct(product)}
                             >
                                 <ProductCard product={product} />
                             </div>
@@ -96,7 +101,11 @@ export const FlashSale = ({
                 <div className="md:hidden">
                     <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
                         {flashSaleProducts?.map((product: IProduct, index) => (
-                            <div key={index} className="w-64 shrink-0">
+                            <div
+                                key={index}
+                                className="w-64 shrink-0"
+                                onClick={() => viewProduct(product)}
+                            >
                                 <ProductCard product={product} />
                             </div>
                         ))}

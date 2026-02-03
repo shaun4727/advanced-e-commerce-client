@@ -35,6 +35,10 @@ export const TrendingProducts = ({
         );
     };
 
+    const viewProduct = (product: IProduct) => {
+        router.push(`/products/${product._id}`);
+    };
+
     return (
         <div className="w-full mt-16 px-2.5">
             {/* Section Header */}
@@ -73,7 +77,13 @@ export const TrendingProducts = ({
                 {/* Mobile Grid */}
                 <div className="md:hidden grid grid-cols-2 gap-4">
                     {trendingProducts.map((product: IProduct, index) => (
-                        <ProductCard key={index} product={product} />
+                        <div
+                            onClick={() => {
+                                viewProduct(product);
+                            }}
+                        >
+                            <ProductCard key={index} product={product} />
+                        </div>
                     ))}
                 </div>
                 {/* Desktop Grid */}
@@ -88,6 +98,9 @@ export const TrendingProducts = ({
                             <div
                                 key={index}
                                 className="w-1/4 shrink-0 px-3 cursor-pointer"
+                                onClick={() => {
+                                    viewProduct(product);
+                                }}
                             >
                                 <ProductCard product={product} />
                             </div>

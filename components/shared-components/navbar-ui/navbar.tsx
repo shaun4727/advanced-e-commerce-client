@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useUser } from '@/context/UserContext';
 import {
     grandTotalSelector,
     orderedProductsSelector,
@@ -20,6 +21,7 @@ export const NavBar = () => {
     const cartProducts = useAppSelector(orderedProductsSelector);
     const grandTotal = useAppSelector(grandTotalSelector);
     const router = useRouter();
+    const { setIsLoading } = useUser();
     const [searchValue, setSearchValue] = useState<string>('');
 
     const getNavigationMenuMethod = async () => {
@@ -41,6 +43,7 @@ export const NavBar = () => {
     };
 
     useEffect(() => {
+        setIsLoading(true);
         getNavigationMenuMethod();
     }, []);
 

@@ -19,7 +19,14 @@ const data = {
         },
         {
             title: 'Order History',
-            url: '/dashboard/order-history',
+            url: '/dashboard/admin/order-history',
+            icon: SquareTerminal,
+            isActive: true,
+            isCollapsible: false,
+        },
+        {
+            title: 'Agent Creation',
+            url: '/dashboard/admin/agent-account-creation',
             icon: SquareTerminal,
             isActive: true,
             isCollapsible: false,

@@ -37,9 +37,7 @@ import { useUser } from '@/context/UserContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { logout } from '@/services/AuthService';
 import { CreditCard, LogOut, Menu, X } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 type catItem = {
     _id: string;
@@ -73,10 +71,6 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
     const isMobile = useIsMobile();
     const { user, setIsLoading, setUser, isLoading } = useUser();
 
-    const [navUrl, setNavUrl] = useState<Record<string, string>>({
-        Home: '/',
-    });
-
     const router = useRouter();
     const pathname = usePathname();
 
@@ -100,11 +94,16 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
     };
 
     const handleNavigation = (item: navItem) => {
+        console.log(item);
         if (item.data.title === 'Home') {
             router.push('/');
         } else {
             router.push(`/products?category=${item._id}`);
         }
+    };
+
+    const handleSubMenuNavigation = (item: catItem) => {
+        router.push(`/products?category=${item._id}`);
     };
 
     return (
@@ -155,27 +154,23 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
                                         className="border-b border-blue-600/20"
                                     >
                                         <AccordionTrigger
-                                            className={`hover:no-underline ${menuItems.children.length === 0 ? '[&>svg]:hidden pointer-events-none' : ''}`}
+                                            className={`hover:no-underline ${menuItems.children.length === 0 ? '[&>svg]:hidden ' : ''}`}
                                         >
-                                            {menuItems.children.length === 0 ? (
-                                                <Link
-                                                    href={
-                                                        navUrl[
-                                                            menuItems.data.title
-                                                        ] || '/'
+                                            <span
+                                                className="text-blue-700 font-semibold text-sm"
+                                                onClick={() => {
+                                                    if (
+                                                        menuItems.data.title !==
+                                                        'Electronics & Others'
+                                                    ) {
+                                                        handleNavigation(
+                                                            menuItems,
+                                                        );
                                                     }
-                                                    className="text-blue-700 font-semibold text-sm w-full text-left"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    } // Prevents the accordion from toggling
-                                                >
-                                                    {menuItems.data.title}
-                                                </Link>
-                                            ) : (
-                                                <span className="text-blue-700 font-semibold text-sm">
-                                                    {menuItems.data.title}
-                                                </span>
-                                            )}
+                                                }}
+                                            >
+                                                {menuItems.data.title}
+                                            </span>
                                         </AccordionTrigger>
 
                                         <AccordionContent className="pl-2">
@@ -209,6 +204,11 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
                                                                                 i
                                                                             }
                                                                             className="text-sm text-gray-600 hover:text-blue-700 cursor-pointer"
+                                                                            onClick={() =>
+                                                                                handleSubMenuNavigation(
+                                                                                    cat,
+                                                                                )
+                                                                            }
                                                                         >
                                                                             {
                                                                                 cat.name
@@ -271,6 +271,11 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
                                                                                             cat._id
                                                                                         }
                                                                                         className="text-sm hover:text-blue-600 cursor-pointer"
+                                                                                        onClick={() =>
+                                                                                            handleSubMenuNavigation(
+                                                                                                cat,
+                                                                                            )
+                                                                                        }
                                                                                     >
                                                                                         {
                                                                                             cat.name

@@ -78,11 +78,12 @@ export const TrendingProducts = ({
                 <div className="md:hidden grid grid-cols-2 gap-4">
                     {trendingProducts.map((product: IProduct, index) => (
                         <div
+                            key={index}
                             onClick={() => {
                                 viewProduct(product);
                             }}
                         >
-                            <ProductCard key={index} product={product} />
+                            <ProductCard product={product} />
                         </div>
                     ))}
                 </div>

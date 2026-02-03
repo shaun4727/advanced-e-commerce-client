@@ -29,7 +29,7 @@ export const NavBar = () => {
             if (res.success) {
                 setNavigationMenu(res.data?.[0]?.items);
             } else {
-                toast.error(res.data.message);
+                toast.error(res?.message);
             }
         } catch (err) {
             console.log(err);

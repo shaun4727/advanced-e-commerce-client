@@ -1,14 +1,26 @@
 'use client';
 
-import { SortableTree, TreeItemComponentProps } from 'dnd-kit-sortable-tree';
+import {
+    SortableTreeProps,
+    TreeItemComponentProps,
+    TreeItems,
+} from 'dnd-kit-sortable-tree';
+import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 
-// 1. Define your item type
 interface MyNavItem {
     id: string;
     value: string;
     children?: MyNavItem[];
 }
+
+// Cast with two type arguments: <Data, Element>
+const SortableTree = dynamic(
+    () => import('dnd-kit-sortable-tree').then((mod) => mod.SortableTree),
+    { ssr: false },
+) as <TData extends MyNavItem, TElement extends HTMLElement = HTMLDivElement>(
+    props: SortableTreeProps<TData, TElement>,
+) => React.ReactElement; // Change JSX.Element to React.ReactElement
 
 const initialItems: MyNavItem[] = [
     { id: '1', value: 'Home' },
@@ -19,7 +31,6 @@ const initialItems: MyNavItem[] = [
     },
 ];
 
-// 2. Create a typed component for the tree items
 const MinimalTreeItemComponent = React.forwardRef<
     HTMLDivElement,
     TreeItemComponentProps<MyNavItem>
@@ -37,20 +48,19 @@ const MinimalTreeItemComponent = React.forwardRef<
                 backgroundColor: 'white',
                 cursor: 'grab',
                 borderRadius: '4px',
-                marginLeft: `${depth * 20}px`, // Visual nesting
+                marginLeft: `${depth * 20}px`,
             }}
-            {...rest} // Necessary for dnd-kit event listeners
+            {...rest}
         >
             {item.value}
         </div>
     );
 });
 
-// Set a display name for debugging
 MinimalTreeItemComponent.displayName = 'MinimalTreeItemComponent';
 
-export default function page() {
-    const [items, setItems] = useState<MyNavItem[]>(initialItems);
+export default function Page() {
+    const [items, setItems] = useState<TreeItems<MyNavItem>>(initialItems);
 
     return (
         <div style={{ padding: '40px', maxWidth: '600px' }}>

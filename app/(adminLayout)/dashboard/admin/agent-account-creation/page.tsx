@@ -6,7 +6,7 @@ export default async function getAgentAccount() {
 
     return (
         <div>
-            <AgentAccountCreation agents={res.data} />
+            <AgentAccountCreation agents={res.data || []} />
         </div>
     );
 }

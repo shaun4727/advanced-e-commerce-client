@@ -258,8 +258,9 @@ export default function AgentAccountCreation({ agents }: { agents: IUser[] }) {
                                     </TableCell>
                                 </TableRow>
                             ) : (
+                                agents &&
                                 agents
-                                    .filter(
+                                    ?.filter(
                                         (agent: IUser) =>
                                             agent.role === 'agent',
                                     )

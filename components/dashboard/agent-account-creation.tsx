@@ -247,7 +247,7 @@ export default function AgentAccountCreation({ agents }: { agents: IUser[] }) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {agents.length === 0 ? (
+                            {agents && agents?.length === 0 ? (
                                 <TableRow>
                                     <TableCell
                                         colSpan={3}

@@ -37,7 +37,7 @@ export function NavMain({
         }[];
     }[];
     role?: string;
-    shopInfo: shopFormData | null;
+    shopInfo?: shopFormData | null;
 }) {
     return (
         <SidebarGroup>

@@ -81,7 +81,7 @@ const page = () => {
                     <div className="grid grid-cols-2 gap-3">
                         <Button
                             variant="default"
-                            onClick={() => {}}
+                            onClick={() => setCredentialMethod('user')}
                             className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 py-3 cursor-pointer"
                         >
                             Sign In with User

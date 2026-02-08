@@ -1,10 +1,15 @@
 'use client';
 import { Bot, SquareTerminal } from 'lucide-react';
 
-import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+} from '@/components/ui/sidebar';
 import { useShop } from '@/context/ShopContext';
 import { useUser } from '@/context/UserContext';
 import { useEffect } from 'react';
+import { NavUser } from './nav-user';
 import { NavMain } from './sidebar-components/nav-main';
 
 // Menu items.
@@ -69,6 +74,25 @@ const data = {
     ],
 };
 
+const UserNavigation = {
+    navMain: [
+        {
+            title: 'Dashboard',
+            url: '/dashboard/user/dashboard',
+            icon: SquareTerminal,
+            isActive: true,
+            isCollapsible: false,
+        },
+        {
+            title: 'Order History',
+            url: '/dashboard/user/order-history',
+            icon: SquareTerminal,
+            isActive: true,
+            isCollapsible: false,
+        },
+    ],
+};
+
 export function AppSidebar() {
     const { user, setIsLoading: userLoader } = useUser();
     const { setIsLoading: shopLoader, shopInfo } = useShop();
@@ -89,7 +113,14 @@ export function AppSidebar() {
                         shopInfo={shopInfo}
                     />
                 )}
+
+                {user?.role === 'user' && (
+                    <NavMain items={UserNavigation.navMain} role={user?.role} />
+                )}
             </SidebarContent>
+            <SidebarFooter>
+                <NavUser />
+            </SidebarFooter>
         </Sidebar>
     );
 }

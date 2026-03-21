@@ -37,7 +37,7 @@ export const TopBrandsComponent = ({ allBrands }: { allBrands: IBrand[] }) => {
     };
 
     return (
-        <div className="my-8 px-2.5">
+        <div className="my-8 px-2.5 md:px-16">
             <div className="flex justify-between">
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 mb-2">

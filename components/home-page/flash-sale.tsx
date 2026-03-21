@@ -40,7 +40,7 @@ export const FlashSale = ({
     };
 
     return (
-        <div className="w-full mt-16 px-2.5">
+        <div className="w-full mt-16 px-2.5 md:px-16">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-3">

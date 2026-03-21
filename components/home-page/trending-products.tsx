@@ -40,7 +40,7 @@ export const TrendingProducts = ({
     };
 
     return (
-        <div className="w-full mt-16 px-2.5">
+        <div className="w-full mt-16 px-2.5 md:px-16">
             {/* Section Header */}
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">

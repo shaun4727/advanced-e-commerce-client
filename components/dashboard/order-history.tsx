@@ -41,6 +41,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { orderAssignedStatus } from '@/constants';
+import { useSocket } from '@/hooks/useSocket';
 import { getMyShopOrdersApi } from '@/services/CartServices';
 import { assignAgentApi } from '@/services/ProductServices';
 import { IAgentOrder, IOrderData, IUser } from '@/types';
@@ -245,6 +246,7 @@ export default function OrderHistoryAdmin({ agents }: { agents: IUser[] }) {
     const [open, setOpen] = useState<boolean>(false);
     const [selectedOrderForAgent, setSelectedOrderForAgent] =
         useState<IOrderData | null>(null);
+    const { socket, connected } = useSocket();
 
     /**
      * Assigning agent to order
@@ -276,6 +278,7 @@ export default function OrderHistoryAdmin({ agents }: { agents: IUser[] }) {
             const res = await assignAgentApi(formData as IAgentOrder);
 
             if (res?.success) {
+                socket.emit('OrderAssigned', { agentId: data.agent });
                 reset();
                 setSelectedOrderForAgent(null);
                 await getUserOrderDetailMethod();
@@ -300,8 +303,14 @@ export default function OrderHistoryAdmin({ agents }: { agents: IUser[] }) {
     };
 
     useEffect(() => {
+        if (!socket) return;
+
+        socket.on('newOrderPlaced', () => {
+            getUserOrderDetailMethod();
+        });
+
         getUserOrderDetailMethod();
-    }, []);
+    }, [socket]);
 
     const getUserOrderDetailMethod = async () => {
         try {
@@ -433,7 +442,7 @@ export default function OrderHistoryAdmin({ agents }: { agents: IUser[] }) {
                             value={filterStatus}
                             onValueChange={setFilterStatus}
                         >
-                            <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectTrigger className="w-full sm:w-45">
                                 <div className="flex items-center">
                                     <Filter className="mr-2 h-4 w-4" />
                                     <SelectValue placeholder="Filter status" />
@@ -471,7 +480,7 @@ export default function OrderHistoryAdmin({ agents }: { agents: IUser[] }) {
                         <TableHeader className="bg-gray-50">
                             <TableRow>
                                 <TableHead
-                                    className="w-[80px] cursor-pointer"
+                                    className="w-20 cursor-pointer"
                                     onClick={() => handleSort('id')}
                                 >
                                     <div className="flex items-center">

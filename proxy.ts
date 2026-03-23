@@ -50,7 +50,7 @@ export const config = {
     matcher: [
         '/login',
         '/create-shop',
-        '/admin',
+        '/dashboard',
         '/admin/:page',
         '/user',
         '/user/:page',

@@ -93,6 +93,25 @@ const UserNavigation = {
     ],
 };
 
+const AgentNavigation = {
+    navMain: [
+        {
+            title: 'Dashboard',
+            url: '/dashboard/agent/dashboard',
+            icon: SquareTerminal,
+            isActive: true,
+            isCollapsible: false,
+        },
+        {
+            title: 'Orders Assigned',
+            url: '/dashboard/agent/orders',
+            icon: SquareTerminal,
+            isActive: true,
+            isCollapsible: false,
+        },
+    ],
+};
+
 export function AppSidebar() {
     const { user, setIsLoading: userLoader } = useUser();
     const { setIsLoading: shopLoader, shopInfo } = useShop();
@@ -116,6 +135,12 @@ export function AppSidebar() {
 
                 {user?.role === 'user' && (
                     <NavMain items={UserNavigation.navMain} role={user?.role} />
+                )}
+                {user?.role === 'agent' && (
+                    <NavMain
+                        items={AgentNavigation.navMain}
+                        role={user?.role}
+                    />
                 )}
             </SidebarContent>
             <SidebarFooter>

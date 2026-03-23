@@ -44,6 +44,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useSocket } from '@/hooks/useSocket';
 import { updateGlobalLoaderState } from '@/redux/features/cartSlice';
 import { useAppDispatch } from '@/redux/hooks';
 import { getMyOrderDetailApi } from '@/services/CartServices';
@@ -227,6 +228,7 @@ export default function OrderHistory() {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [activeOrder, setActiveOrder] = useState<IOrderData | null>(null);
     const dispatch = useAppDispatch();
+    const { socket, connected } = useSocket();
 
     const ordersPerPage = 10;
     type TabSwitchKey = 'productDetail' | 'shipment' | 'completed';
@@ -354,6 +356,19 @@ export default function OrderHistory() {
     const openDrawerToCheckOrder = (order: IOrderData) => {
         orderDtlSwitch(steps[0]);
         setActiveOrder(order);
+
+        // Join the user to a room. socket
+
+        new Promise((resolve) => {
+            socket.emit(
+                'joinOrderRoom',
+                { orderId: order?._id },
+                (response: any) => {
+                    resolve(response);
+                },
+            );
+        }).then((res) => console.log('success'));
+
         if (order.status === 'Picked') {
             steps[1].active = true;
         } else {
@@ -768,12 +783,12 @@ export default function OrderHistory() {
                                     <div className="flex items-center mb-2 sm:mb-0">
                                         <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
                                         <span className="text-sm sm:text-base font-medium text-gray-900">
-                                            With courier en route
+                                            Order process
                                         </span>
                                     </div>
-                                    <span className="text-sm text-gray-600 ml-5 sm:ml-0">
+                                    {/* <span className="text-sm text-gray-600 ml-5 sm:ml-0">
                                         No Resi: 34u2394y239y
-                                    </span>
+                                    </span> */}
                                 </div>
 
                                 <div className="mb-8">

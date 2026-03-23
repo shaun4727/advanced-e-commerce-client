@@ -768,7 +768,7 @@ export default function OrderHistory() {
                                     <div className="flex items-center mb-2 sm:mb-0">
                                         <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
                                         <span className="text-sm sm:text-base font-medium text-gray-900">
-                                            With courier en route
+                                            Your order is processing
                                         </span>
                                     </div>
                                     <span className="text-sm text-gray-600 ml-5 sm:ml-0">

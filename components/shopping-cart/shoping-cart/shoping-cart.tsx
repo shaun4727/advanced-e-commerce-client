@@ -35,6 +35,7 @@ import { Separator } from '@/components/ui/separator';
 import { orderType } from '@/constants';
 import { cities } from '@/constants/cities';
 import { useUser } from '@/context/UserContext';
+import { useSocket } from '@/hooks/useSocket';
 import { currencyFormatter } from '@/lib/currencyFormatters';
 import {
     clearCart,
@@ -94,6 +95,7 @@ export default function ShoppingCartSection() {
     const router = useRouter();
     const shopId = useAppSelector(shopSelector);
     const globalLoadingState = useAppSelector(globalStateLoaderSelector);
+    const { socket, connected } = useSocket();
 
     const {
         register,
@@ -171,6 +173,9 @@ export default function ShoppingCartSection() {
             const res = await createOrder(orderData);
 
             if (res.success) {
+                //notifying server that order has been placed. socket
+                socket.emit('orderPlaced');
+
                 toast.success(res.message, { id: toastID });
                 dispatch(clearCart());
                 dispatch(updateGlobalLoaderState(true));
@@ -293,162 +298,166 @@ export default function ShoppingCartSection() {
                                     </CardContent>
                                 </Card>
                             ) : (
-                                products.map((item: IProduct, index) => (
-                                    <Card
-                                        key={index}
-                                        className="hover:shadow-md transition-shadow duration-200"
-                                    >
-                                        <CardContent className="p-6">
-                                            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
-                                                {/* Product Image */}
-                                                <div className="flex-shrink-0">
-                                                    <div className="relative w-24 h-24 md:w-32 md:h-32 bg-gray-100 rounded-lg overflow-hidden">
-                                                        <Image
-                                                            src={
-                                                                item
-                                                                    .imageUrls[0] ||
-                                                                '/placeholder.svg'
-                                                            }
-                                                            alt={item.name}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
-                                                        {!item.stock && (
-                                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                                                <span className="text-white text-xs font-medium">
-                                                                    Out of Stock
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Product Details */}
-                                                <div className="flex-1 space-y-3">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <h3 className="font-semibold text-gray-900 text-lg">
-                                                                {item.name}
-                                                            </h3>
-                                                            <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                                                                {/* {item. && <span>Color: {item.color}</span>} */}
-                                                            </div>
+                                products.map(
+                                    (item: IProduct, index: number) => (
+                                        <Card
+                                            key={index}
+                                            className="hover:shadow-md transition-shadow duration-200"
+                                        >
+                                            <CardContent className="p-6">
+                                                <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
+                                                    {/* Product Image */}
+                                                    <div className="shrink-0">
+                                                        <div className="relative w-24 h-24 md:w-32 md:h-32 bg-gray-100 rounded-lg overflow-hidden">
+                                                            <Image
+                                                                src={
+                                                                    item
+                                                                        .imageUrls[0] ||
+                                                                    '/placeholder.svg'
+                                                                }
+                                                                alt={item.name}
+                                                                fill
+                                                                className="object-cover"
+                                                            />
                                                             {!item.stock && (
-                                                                <Badge
-                                                                    variant="destructive"
-                                                                    className="mt-2"
-                                                                >
-                                                                    Out of Stock
-                                                                </Badge>
+                                                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                                                    <span className="text-white text-xs font-medium">
+                                                                        Out of
+                                                                        Stock
+                                                                    </span>
+                                                                </div>
                                                             )}
                                                         </div>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            // onClick={() => removeItem(item.id)}
-                                                            onClick={() =>
-                                                                handleRemoveProduct(
-                                                                    item._id,
-                                                                )
-                                                            }
-                                                            className="text-gray-400 hover:text-red-500 hover:bg-red-50"
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
                                                     </div>
 
-                                                    <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
-                                                        {/* Price */}
-                                                        <div className="flex items-center space-x-2">
-                                                            <span className="text-xl font-bold text-blue-600">
-                                                                $
-                                                                {item.price.toFixed(
-                                                                    2,
+                                                    {/* Product Details */}
+                                                    <div className="flex-1 space-y-3">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <h3 className="font-semibold text-gray-900 text-lg">
+                                                                    {item.name}
+                                                                </h3>
+                                                                <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                                                                    {/* {item. && <span>Color: {item.color}</span>} */}
+                                                                </div>
+                                                                {!item.stock && (
+                                                                    <Badge
+                                                                        variant="destructive"
+                                                                        className="mt-2"
+                                                                    >
+                                                                        Out of
+                                                                        Stock
+                                                                    </Badge>
                                                                 )}
-                                                            </span>
-                                                            {item.offerPrice && (
-                                                                <span className="text-sm text-gray-500 line-through">
-                                                                    $
-                                                                    {item.offerPrice.toFixed(
-                                                                        2,
-                                                                    )}
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Quantity Controls */}
-                                                        <div className="flex items-center space-x-3">
-                                                            <span className="text-sm text-gray-600">
-                                                                Qty:
-                                                            </span>
-                                                            <div className="flex items-center border border-gray-300 rounded-md">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    // onClick={() =>
-                                                                    //   updateQuantity(item.id, item.quantity - 1)
-                                                                    // }
-                                                                    onClick={() =>
-                                                                        decrementQuantity(
-                                                                            item._id,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        item.stock <=
-                                                                        1
-                                                                    }
-                                                                    className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50"
-                                                                >
-                                                                    <Minus className="h-4 w-4" />
-                                                                </Button>
-                                                                <span className="px-4 py-1 border-x border-gray-300 min-w-[50px] text-center">
-                                                                    {
-                                                                        item.orderQuantity
-                                                                    }
-                                                                </span>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        incrementQuantity(
-                                                                            item._id,
-                                                                        )
-                                                                    }
-                                                                    // onClick={() =>
-                                                                    //   updateQuantity(item.id, item.quantity + 1)
-                                                                    // }
-                                                                    disabled={
-                                                                        (item.orderQuantity &&
-                                                                            item.orderQuantity >=
-                                                                                item.stock) ||
-                                                                        !item.stock
-                                                                    }
-                                                                    className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50"
-                                                                >
-                                                                    <Plus className="h-4 w-4" />
-                                                                </Button>
                                                             </div>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                // onClick={() => removeItem(item.id)}
+                                                                onClick={() =>
+                                                                    handleRemoveProduct(
+                                                                        item._id,
+                                                                    )
+                                                                }
+                                                                className="text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </Button>
                                                         </div>
 
-                                                        {/* Item Total */}
-                                                        <div className="text-right">
-                                                            <span className="text-lg font-semibold text-gray-900">
-                                                                $
-                                                                {item.orderQuantity &&
-                                                                    (
-                                                                        item.price *
-                                                                        item.orderQuantity
-                                                                    ).toFixed(
+                                                        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
+                                                            {/* Price */}
+                                                            <div className="flex items-center space-x-2">
+                                                                <span className="text-xl font-bold text-blue-600">
+                                                                    $
+                                                                    {item.price.toFixed(
                                                                         2,
                                                                     )}
-                                                            </span>
+                                                                </span>
+                                                                {item.offerPrice && (
+                                                                    <span className="text-sm text-gray-500 line-through">
+                                                                        $
+                                                                        {item.offerPrice.toFixed(
+                                                                            2,
+                                                                        )}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Quantity Controls */}
+                                                            <div className="flex items-center space-x-3">
+                                                                <span className="text-sm text-gray-600">
+                                                                    Qty:
+                                                                </span>
+                                                                <div className="flex items-center border border-gray-300 rounded-md">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        // onClick={() =>
+                                                                        //   updateQuantity(item.id, item.quantity - 1)
+                                                                        // }
+                                                                        onClick={() =>
+                                                                            decrementQuantity(
+                                                                                item._id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            item.stock <=
+                                                                            1
+                                                                        }
+                                                                        className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50"
+                                                                    >
+                                                                        <Minus className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <span className="px-4 py-1 border-x border-gray-300 min-w-[50px] text-center">
+                                                                        {
+                                                                            item.orderQuantity
+                                                                        }
+                                                                    </span>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() =>
+                                                                            incrementQuantity(
+                                                                                item._id,
+                                                                            )
+                                                                        }
+                                                                        // onClick={() =>
+                                                                        //   updateQuantity(item.id, item.quantity + 1)
+                                                                        // }
+                                                                        disabled={
+                                                                            (item.orderQuantity &&
+                                                                                item.orderQuantity >=
+                                                                                    item.stock) ||
+                                                                            !item.stock
+                                                                        }
+                                                                        className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50"
+                                                                    >
+                                                                        <Plus className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Item Total */}
+                                                            <div className="text-right">
+                                                                <span className="text-lg font-semibold text-gray-900">
+                                                                    $
+                                                                    {item.orderQuantity &&
+                                                                        (
+                                                                            item.price *
+                                                                            item.orderQuantity
+                                                                        ).toFixed(
+                                                                            2,
+                                                                        )}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))
+                                            </CardContent>
+                                        </Card>
+                                    ),
+                                )
                             )}
 
                             <Card>
@@ -467,7 +476,7 @@ export default function ShoppingCartSection() {
                                                 )}
                                             >
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div className="space-y-2">
+                                                    <div className="space-y-2 ">
                                                         <Label
                                                             htmlFor="city"
                                                             className="text-sm font-medium text-gray-700"
@@ -491,7 +500,7 @@ export default function ShoppingCartSection() {
                                                                     <SelectTrigger className="w-full">
                                                                         <SelectValue placeholder="Select your city" />
                                                                     </SelectTrigger>
-                                                                    <SelectContent>
+                                                                    <SelectContent className="max-h-120">
                                                                         {cities.map(
                                                                             (
                                                                                 city,

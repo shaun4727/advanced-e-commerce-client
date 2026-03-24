@@ -51,6 +51,7 @@ import { getMyOrderDetailApi } from '@/services/CartServices';
 import { getCustomerInvoiceApiServer } from '@/services/ProductServices';
 import { IOrderData, IStep } from '@/types';
 import { useRouter } from 'next/navigation';
+import MapTracking from './map-tracking';
 
 function OrderHistorySkeleton() {
     return (
@@ -431,44 +432,47 @@ export default function OrderHistory() {
             return (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Seller Address */}
-                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                                Shipping Address (Seller)
-                            </h3>
-                            {/* <Edit className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer hover:text-gray-600" /> */}
+                    <div>
+                        <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                                    Shipping Address (Seller)
+                                </h3>
+                                {/* <Edit className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer hover:text-gray-600" /> */}
+                            </div>
+                            <div className="space-y-1 text-sm sm:text-base text-gray-700">
+                                <p className="font-medium">EMART Group</p>
+                                <p>Tejgaon Industrial Area, 29/C & 29/D</p>
+                                <p>Bangladesh</p>
+                            </div>
                         </div>
-                        <div className="space-y-1 text-sm sm:text-base text-gray-700">
-                            <p className="font-medium">EMART Group</p>
-                            <p>Tejgaon Industrial Area, 29/C & 29/D</p>
-                            <p>Bangladesh</p>
-                        </div>
-                    </div>
 
-                    {/* Buyer Address */}
-                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                                Shipping Address (Buyer)
-                            </h3>
-                            {/* <Edit className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer hover:text-gray-600" /> */}
-                        </div>
-                        <div className="space-y-1 text-sm sm:text-base text-gray-700">
-                            <p className="font-medium">
-                                {order.shippingAddress?.area ?? ''}
-                            </p>
-                            <p>
-                                {order.shippingAddress
-                                    ?.street_or_building_name ?? ''}
-                            </p>
-                            <p>
-                                {order.shippingAddress?.city ?? ''}{' '}
-                                {order.shippingAddress?.zip_code ?? ''}
-                            </p>
-                            <p>Bangladesh</p>
-                            {/* <p>4567 Elm Street, Apt 3B,</p> */}
+                        {/* Buyer Address */}
+                        <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                                    Shipping Address (Buyer)
+                                </h3>
+                                {/* <Edit className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer hover:text-gray-600" /> */}
+                            </div>
+                            <div className="space-y-1 text-sm sm:text-base text-gray-700">
+                                <p className="font-medium">
+                                    {order.shippingAddress?.area ?? ''}
+                                </p>
+                                <p>
+                                    {order.shippingAddress
+                                        ?.street_or_building_name ?? ''}
+                                </p>
+                                <p>
+                                    {order.shippingAddress?.city ?? ''}{' '}
+                                    {order.shippingAddress?.zip_code ?? ''}
+                                </p>
+                                <p>Bangladesh</p>
+                                {/* <p>4567 Elm Street, Apt 3B,</p> */}
+                            </div>
                         </div>
                     </div>
+                    <MapTracking />
                 </div>
             );
         } else if (tabSwitch.productDetail === 1) {
@@ -879,7 +883,7 @@ export default function OrderHistory() {
                                 {getTabDetail(activeOrder as IOrderData)}
                             </div>
                             <DrawerFooter>
-                                {tabSwitch.shipment === 1 && (
+                                {/* {tabSwitch.shipment === 1 && (
                                     <div className="flex justify-center">
                                         <Button
                                             className="w-md"
@@ -888,7 +892,7 @@ export default function OrderHistory() {
                                             Track Order
                                         </Button>
                                     </div>
-                                )}
+                                )} */}
                                 {/* <DrawerClose asChild>
                                 <Button variant="outline">Cancel</Button>
                               </DrawerClose> */}

@@ -241,13 +241,36 @@ export default function OrderHistory() {
     const router = useRouter();
 
     useEffect(() => {
-        dispatch(updateGlobalLoaderState(false));
         getUserOrderDetailMethod();
+        dispatch(updateGlobalLoaderState(false));
+        setCurrentTab(steps[0]);
     }, []);
 
     useEffect(() => {
-        setCurrentTab(steps[0]);
-    }, []);
+        if (!socket) return;
+
+        const handleShippedOrder = ({ orderId }: { orderId: string }) => {
+            setActiveOrder((prevOrder) => {
+                // 1. If there's no active order, or it doesn't match the ID, return as is
+                if (!prevOrder) {
+                    return prevOrder;
+                }
+
+                // 2. Return a NEW object with the updated status
+                return {
+                    ...prevOrder,
+                    status: 'Picked',
+                };
+            });
+            steps[1].active = true;
+        };
+
+        socket.on('ShippedOrder', handleShippedOrder);
+
+        return () => {
+            socket.off('ShippedOrder', handleShippedOrder);
+        };
+    }, [socket, activeOrder]);
 
     const handleTrackOrder = () => {
         router.push(`/track-agent?orderId=${activeOrder?._id}`);

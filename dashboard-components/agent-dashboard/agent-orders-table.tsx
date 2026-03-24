@@ -22,7 +22,7 @@ import { updateAgentPickStatusApi } from '@/services/CartServices';
 import { format } from 'date-fns';
 import { Calendar, MapPin, Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function AgentOrdersTable({
     initialOrders,
@@ -35,24 +35,23 @@ export default function AgentOrdersTable({
     const { socket, connected } = useSocket();
     const router = useRouter();
 
-    useEffect(() => {
-        const handleOrderAssigned = (data: any) => {
-            if (data.agentId === agentId) {
-                router.refresh();
-            }
-        };
+    // useEffect(() => {
+    //     const handleOrderAssigned = (data: any) => {
+    //         if (data.agentId === agentId) {
+    //             router.refresh();
+    //         }
+    //     };
 
-        socket.on('OrderAssigned', handleOrderAssigned);
+    //     socket.on('OrderAssigned', handleOrderAssigned);
 
-        // Explicitly return void by using curly braces
-        return () => {
-            socket.off('OrderAssigned', handleOrderAssigned);
-        };
-    }, [agentId, router]);
+    //     // Explicitly return void by using curly braces
+    //     return () => {
+    //         socket.off('OrderAssigned', handleOrderAssigned);
+    //     };
+    // }, [agentId, router]);
 
     const handleStatusChange = async (orderId: string, newStatus: string) => {
         // 1. Logic to update status via API or Socket
-        console.log(`Updating order ${orderId} to ${newStatus}`);
 
         // Update local state for immediate feedback
 
@@ -64,6 +63,7 @@ export default function AgentOrdersTable({
                         o._id === orderId ? { ...o, status: newStatus } : o,
                     ),
                 );
+                console.log('called socket event', orderId);
                 socket.emit('OrderPicked', { orderId });
             }
         }
@@ -142,7 +142,10 @@ export default function AgentOrdersTable({
                                 <TableCell className="text-right">
                                     <Select
                                         onValueChange={(val) =>
-                                            handleStatusChange(order._id, val)
+                                            handleStatusChange(
+                                                order.orderId,
+                                                val,
+                                            )
                                         }
                                         defaultValue={order.status}
                                     >

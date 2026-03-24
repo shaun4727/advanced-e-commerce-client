@@ -1,99 +1,129 @@
-import { trackingPath } from '@/constants/coordinations';
-import { RoutePoint } from '@/types/mapt';
 import {
+    DirectionsRenderer,
+    DirectionsService,
     GoogleMap,
     Marker,
-    Polyline,
     useJsApiLoader,
 } from '@react-google-maps/api';
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const containerStyle = {
     width: '100%',
     height: '400px',
 };
 
-const center = {
-    lat: 23.6978,
-    lng: 90.509,
-};
+const origin = { lat: 23.6978, lng: 90.509 };
+const destination = { lat: 23.5303, lng: 90.7187 };
 
 const MapTracking = () => {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: 'AIzaSyA_mB0WZPBVwtoMxQWvPTYe2oo6SdmihIQ',
-        libraries: ['places'],
+        libraries: ['places', 'geometry'],
     });
 
-    const [map, setMap] = React.useState<google.maps.Map | null>(null);
+    const [directionsResponse, setDirectionsResponse] =
+        useState<google.maps.DirectionsResult | null>(null);
     const [currentIndex, setCurrentIndex] = useState<number>(0);
-    const [carLocation, setCarLocation] = useState<RoutePoint>(trackingPath[0]);
+    const [carLocation, setCarLocation] = useState<google.maps.LatLng | null>(
+        null,
+    );
+    const [hasReached, setHasReached] = useState<boolean>(false);
 
-    const onLoad = React.useCallback(function callback(map: google.maps.Map) {
-        // This is just an example of getting and using the map instance!!! don't just blindly copy!
-        const bounds = new window.google.maps.LatLngBounds(center);
-        map.fitBounds(bounds);
-
-        setMap(map);
-    }, []);
-
-    const onUnmount = React.useCallback(function callback(
-        map: google.maps.Map,
-    ) {
-        setMap(null);
-    }, []);
+    const directionsCallback = useCallback(
+        (
+            result: google.maps.DirectionsResult | null,
+            status: google.maps.DirectionsStatus,
+        ) => {
+            if (status === 'OK' && result) {
+                setDirectionsResponse(result);
+                setCarLocation(result.routes[0].overview_path[0]);
+            }
+        },
+        [],
+    );
 
     useEffect(() => {
+        if (!directionsResponse || hasReached) return;
+
+        const path = directionsResponse.routes[0].overview_path;
+
         const interval = setInterval(() => {
             setCurrentIndex((prevIndex) => {
-                const nextIndex = (prevIndex + 1) % trackingPath.length;
-                setCarLocation(trackingPath[nextIndex]);
+                const nextIndex = prevIndex + 1;
+
+                // CHECK: If we reached the last coordinate
+                if (nextIndex >= path.length - 1) {
+                    setHasReached(true);
+                    setCarLocation(path[path.length - 1]);
+                    clearInterval(interval);
+                    return path.length - 1;
+                }
+
+                setCarLocation(path[nextIndex]);
                 return nextIndex;
             });
-        }, 2000);
+        }, 500); // Speed set to 1s for testing
 
         return () => clearInterval(interval);
-    }, []);
+    }, [directionsResponse, hasReached]);
 
     if (!isLoaded) return <div>Loading Maps...</div>;
 
-    return isLoaded ? (
-        <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={10}
-            onLoad={onLoad}
-            onUnmount={onUnmount}
-        >
-            {/* Child components, such as markers, info windows, etc. */}
-            <>
-                <Polyline
-                    path={trackingPath.map((p) => ({ lat: p.lat, lng: p.lng }))}
+    return (
+        <GoogleMap mapContainerStyle={containerStyle} center={origin} zoom={12}>
+            {!directionsResponse && (
+                <DirectionsService
                     options={{
-                        strokeColor: '#2196F3',
-                        strokeOpacity: 0.8,
-                        strokeWeight: 5,
+                        origin,
+                        destination,
+                        travelMode: google.maps.TravelMode.DRIVING,
                     }}
+                    callback={directionsCallback}
                 />
+            )}
 
-                {/* 2. The Animated Car Marker */}
-                <Marker
-                    position={{ lat: carLocation.lat, lng: carLocation.lng }}
-                    icon={{
-                        url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
-                        // 3. Using window.google check for TS safety
-                        scaledSize: window.google
-                            ? new window.google.maps.Size(40, 40)
-                            : undefined,
-                        anchor: window.google
-                            ? new window.google.maps.Point(20, 20)
-                            : undefined,
+            {directionsResponse && (
+                <DirectionsRenderer
+                    options={{
+                        directions: directionsResponse,
+                        polylineOptions: {
+                            strokeColor: '#1976D2',
+                            strokeWeight: 5,
+                        },
+                        suppressMarkers: true,
                     }}
                 />
-            </>
+            )}
+
+            {carLocation && (
+                <Marker
+                    position={carLocation}
+                    // Add a label only when reached
+                    label={
+                        hasReached
+                            ? {
+                                  text: 'Reached',
+                                  color: '#000000',
+                                  fontWeight: 'bold',
+                                  className: 'marker-label',
+                              }
+                            : undefined
+                    }
+                    icon={{
+                        path: window.google
+                            ? window.google.maps.SymbolPath.CIRCLE
+                            : 0,
+                        // Change color to Green (#00FF00) when reached, otherwise Red
+                        fillColor: hasReached ? '#00FF00' : '#FF0000',
+                        fillOpacity: 1.0,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 2,
+                        scale: hasReached ? 12 : 8, // Make it slightly larger when reached
+                    }}
+                />
+            )}
         </GoogleMap>
-    ) : (
-        <></>
     );
 };
 

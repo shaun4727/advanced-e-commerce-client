@@ -198,6 +198,27 @@ export const updateAgentPickStatusApi = async (agentId: string) => {
     }
 };
 
+export const updateAgentDeliveryStatusApi = async (agentId: string) => {
+    try {
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API}/user/update-agent-status-received/${agentId}`,
+            {
+                method: 'PATCH',
+                headers: {
+                    Authorization: (await cookies()).get(
+                        'ecommerce-accessToken',
+                    )!.value,
+                    'Content-Type': 'application/json',
+                },
+            },
+        );
+        updateTag('AgentOrders');
+        return await res.json();
+    } catch (error: any) {
+        return Error(error);
+    }
+};
+
 export const updateOrderDeliveryStatusApi = async (
     obj: Record<string, unknown>,
 ) => {

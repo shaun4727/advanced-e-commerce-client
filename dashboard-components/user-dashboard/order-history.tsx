@@ -50,7 +50,6 @@ import { useAppDispatch } from '@/redux/hooks';
 import { getMyOrderDetailApi } from '@/services/CartServices';
 import { getCustomerInvoiceApiServer } from '@/services/ProductServices';
 import { IOrderData, IStep } from '@/types';
-import { useRouter } from 'next/navigation';
 import MapTracking from './map-tracking';
 
 function OrderHistorySkeleton() {
@@ -239,8 +238,6 @@ export default function OrderHistory() {
         completed: 0,
     });
 
-    const router = useRouter();
-
     useEffect(() => {
         getUserOrderDetailMethod();
         dispatch(updateGlobalLoaderState(false));
@@ -266,16 +263,37 @@ export default function OrderHistory() {
             steps[1].active = true;
         };
 
+        const handleReceivedOrder = ({ orderId }: { orderId: string }) => {
+            setActiveOrder((prevOrder) => {
+                // 1. If there's no active order, or it doesn't match the ID, return as is
+                if (!prevOrder) {
+                    return prevOrder;
+                }
+
+                // 2. Return a NEW object with the updated status
+                return {
+                    ...prevOrder,
+                    status: 'Completed',
+                };
+            });
+
+            steps[2].active = true;
+        };
+
         socket.on('ShippedOrder', handleShippedOrder);
+
+        socket.on('ReceivedOrder', handleReceivedOrder);
+
+        if (activeOrder?.status === 'Completed') {
+            steps[1].active = true;
+            steps[2].active = true;
+        }
 
         return () => {
             socket.off('ShippedOrder', handleShippedOrder);
         };
     }, [socket, activeOrder]);
 
-    const handleTrackOrder = () => {
-        router.push(`/track-agent?orderId=${activeOrder?._id}`);
-    };
     const getUserOrderDetailMethod = async () => {
         try {
             const res = await getMyOrderDetailApi();
@@ -393,8 +411,9 @@ export default function OrderHistory() {
             );
         }).then((res) => console.log('success'));
 
-        if (order.status === 'Picked') {
+        if (order.status === 'Picked' || order.status === 'Completed') {
             steps[1].active = true;
+            steps[2].active = true;
         } else {
             steps[1].active = false;
         }
@@ -405,6 +424,7 @@ export default function OrderHistory() {
         if (!step?.active) {
             return;
         }
+
         setCurrentTab(step);
         const resetTabs: Record<TabSwitchKey, number> = {
             productDetail: step.icon === 'CreditCard' ? 1 : 0,
@@ -472,7 +492,20 @@ export default function OrderHistory() {
                             </div>
                         </div>
                     </div>
-                    <MapTracking />
+                    {activeOrder?.status !== 'Completed' ? (
+                        <MapTracking />
+                    ) : (
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 max-h-24">
+                            <div className="flex items-start">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                                <div>
+                                    <p className="text-sm font-medium text-blue-900 mb-1">
+                                        Your product has been delivered!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         } else if (tabSwitch.productDetail === 1) {
@@ -581,7 +614,7 @@ export default function OrderHistory() {
                     </div>
                 </div>
             );
-        } else {
+        } else if (tabSwitch.completed === 1) {
             return (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-start">

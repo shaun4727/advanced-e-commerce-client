@@ -18,7 +18,10 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useSocket } from '@/hooks/useSocket';
-import { updateAgentPickStatusApi } from '@/services/CartServices';
+import {
+    updateAgentDeliveryStatusApi,
+    updateAgentPickStatusApi,
+} from '@/services/CartServices';
 import { format } from 'date-fns';
 import { Calendar, MapPin, Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -35,21 +38,6 @@ export default function AgentOrdersTable({
     const { socket, connected } = useSocket();
     const router = useRouter();
 
-    // useEffect(() => {
-    //     const handleOrderAssigned = (data: any) => {
-    //         if (data.agentId === agentId) {
-    //             router.refresh();
-    //         }
-    //     };
-
-    //     socket.on('OrderAssigned', handleOrderAssigned);
-
-    //     // Explicitly return void by using curly braces
-    //     return () => {
-    //         socket.off('OrderAssigned', handleOrderAssigned);
-    //     };
-    // }, [agentId, router]);
-
     const handleStatusChange = async (orderId: string, newStatus: string) => {
         // 1. Logic to update status via API or Socket
 
@@ -63,8 +51,17 @@ export default function AgentOrdersTable({
                         o._id === orderId ? { ...o, status: newStatus } : o,
                     ),
                 );
-                console.log('called socket event', orderId);
                 socket.emit('OrderPicked', { orderId });
+            }
+        } else if (newStatus === 'Delivered') {
+            const res = await updateAgentDeliveryStatusApi(agentId);
+            if (res.success && res.data.picked) {
+                setOrders((prev) =>
+                    prev.map((o) =>
+                        o._id === orderId ? { ...o, status: newStatus } : o,
+                    ),
+                );
+                socket.emit('OrderDelivered', { orderId });
             }
         }
 

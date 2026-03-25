@@ -179,7 +179,7 @@ export default function ShoppingCartSection() {
                 toast.success(res.message, { id: toastID });
                 dispatch(clearCart());
                 dispatch(updateGlobalLoaderState(true));
-                router.push('/user/order-history');
+                router.push('/dashboard/user/order-history');
             } else {
                 console.log(res);
             }

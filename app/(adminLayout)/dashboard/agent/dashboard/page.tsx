@@ -10,7 +10,7 @@ const page = async () => {
     const res = await getProfileDataApi();
     const user = res.data;
 
-    const formattedDate = new Date(user.lastLogin).toLocaleString();
+    const formattedDate = new Date(user?.lastLogin).toLocaleString();
     return (
         <Card className=" overflow-hidden border-t-4 border-t-primary shadow-lg">
             <CardHeader className="flex flex-row items-center gap-4 pb-2">

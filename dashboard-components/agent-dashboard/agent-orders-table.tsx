@@ -46,20 +46,24 @@ export default function AgentOrdersTable({
         if (newStatus === 'Picked') {
             const res = await updateAgentPickStatusApi(agentId);
             if (res.success && res.data.picked) {
-                setOrders((prev) =>
-                    prev.map((o) =>
-                        o._id === orderId ? { ...o, status: newStatus } : o,
-                    ),
+                setOrders(
+                    (prev) =>
+                        prev &&
+                        prev.map((o) =>
+                            o._id === orderId ? { ...o, status: newStatus } : o,
+                        ),
                 );
                 socket.emit('OrderPicked', { orderId });
             }
         } else if (newStatus === 'Delivered') {
             const res = await updateAgentDeliveryStatusApi(agentId);
             if (res.success && res.data.picked) {
-                setOrders((prev) =>
-                    prev.map((o) =>
-                        o._id === orderId ? { ...o, status: newStatus } : o,
-                    ),
+                setOrders(
+                    (prev) =>
+                        prev &&
+                        prev.map((o) =>
+                            o._id === orderId ? { ...o, status: newStatus } : o,
+                        ),
                 );
                 socket.emit('OrderDelivered', { orderId });
             }
@@ -85,91 +89,94 @@ export default function AgentOrdersTable({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {orders.map((order) => (
-                            <TableRow
-                                key={order._id}
-                                className="hover:bg-muted/30 transition-colors"
-                            >
-                                <TableCell className="font-mono text-xs font-bold">
-                                    <div className="flex items-center gap-2">
-                                        <Package className="h-4 w-4 text-primary" />
-                                        {order.orderId.slice(-8).toUpperCase()}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-1 text-sm font-medium">
-                                            <MapPin className="h-3 w-3 text-red-500" />
-                                            {order.destination.area},{' '}
-                                            {order.destination.city}
+                        {orders &&
+                            orders.map((order) => (
+                                <TableRow
+                                    key={order?._id}
+                                    className="hover:bg-muted/30 transition-colors"
+                                >
+                                    <TableCell className="font-mono text-xs font-bold">
+                                        <div className="flex items-center gap-2">
+                                            <Package className="h-4 w-4 text-primary" />
+                                            {order?.orderId
+                                                ?.slice(-8)
+                                                ?.toUpperCase()}
                                         </div>
-                                        <span className="text-xs text-muted-foreground line-clamp-1">
-                                            {
-                                                order.destination
-                                                    .street_or_building_name
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-1 text-sm font-medium">
+                                                <MapPin className="h-3 w-3 text-red-500" />
+                                                {order?.destination?.area},{' '}
+                                                {order?.destination?.city}
+                                            </div>
+                                            <span className="text-xs text-muted-foreground line-clamp-1">
+                                                {
+                                                    order?.destination
+                                                        ?.street_or_building_name
+                                                }
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">
+                                        <div className="flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            {format(
+                                                new Date(order?.createdAt),
+                                                'PPP',
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={
+                                                order?.status === 'Assigned'
+                                                    ? 'secondary'
+                                                    : 'default'
                                             }
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-xs text-muted-foreground">
-                                    <div className="flex items-center gap-1">
-                                        <Calendar className="h-3 w-3" />
-                                        {format(
-                                            new Date(order.createdAt),
-                                            'PPP',
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge
-                                        variant={
-                                            order.status === 'Assigned'
-                                                ? 'secondary'
-                                                : 'default'
-                                        }
-                                        className={
-                                            order.status === 'Picked'
-                                                ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                                                : ''
-                                        }
-                                    >
-                                        {order.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Select
-                                        onValueChange={(val) =>
-                                            handleStatusChange(
-                                                order.orderId,
-                                                val,
-                                            )
-                                        }
-                                        defaultValue={order.status}
-                                    >
-                                        <SelectTrigger className="w-[130px] ml-auto h-9">
-                                            <SelectValue placeholder="Update Status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem
-                                                value="Assigned"
-                                                disabled
-                                            >
-                                                Assigned
-                                            </SelectItem>
-                                            <SelectItem value="Picked">
-                                                Picked
-                                            </SelectItem>
-                                            <SelectItem value="Delivered">
-                                                Delivered
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                            className={
+                                                order?.status === 'Picked'
+                                                    ? 'bg-green-100 text-green-700 hover:bg-green-100'
+                                                    : ''
+                                            }
+                                        >
+                                            {order?.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Select
+                                            onValueChange={(val) =>
+                                                handleStatusChange(
+                                                    order?.orderId,
+                                                    val,
+                                                )
+                                            }
+                                            defaultValue={order?.status}
+                                        >
+                                            <SelectTrigger className="w-[130px] ml-auto h-9">
+                                                <SelectValue placeholder="Update Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem
+                                                    value="Assigned"
+                                                    disabled
+                                                >
+                                                    Assigned
+                                                </SelectItem>
+                                                <SelectItem value="Picked">
+                                                    Picked
+                                                </SelectItem>
+                                                <SelectItem value="Delivered">
+                                                    Delivered
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                     </TableBody>
                 </Table>
-                {orders.length === 0 && (
+                {orders && orders.length === 0 && (
                     <div className="py-20 text-center text-muted-foreground">
                         No orders assigned to you yet.
                     </div>

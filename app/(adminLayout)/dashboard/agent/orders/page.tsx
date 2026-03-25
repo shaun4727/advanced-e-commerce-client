@@ -6,7 +6,7 @@ import { getOrdersOfAgentApi } from '@/services/CartServices';
 const Page = async () => {
     const resp = await getProfileDataApi();
     const user = resp.data;
-    const res = await getOrdersOfAgentApi(user._id);
+    const res = await getOrdersOfAgentApi(user?._id);
     const orders = res.data;
 
     return (
@@ -16,12 +16,12 @@ const Page = async () => {
                     Assigned Deliveries
                 </h1>
                 <p className="text-muted-foreground italic">
-                    Logged in as: {user.name}
+                    Logged in as: {user?.name}
                 </p>
             </div>
 
             {/* Pass data to the Client Component Table */}
-            <AgentOrdersTable initialOrders={orders} agentId={user._id} />
+            <AgentOrdersTable initialOrders={orders} agentId={user?._id} />
         </div>
     );
 };

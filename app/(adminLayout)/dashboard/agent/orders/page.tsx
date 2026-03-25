@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import AgentOrdersTable from '@/dashboard-components/agent-dashboard/agent-orders-table';
 import { getProfileDataApi } from '@/services/AuthService';
 import { getOrdersOfAgentApi } from '@/services/CartServices';

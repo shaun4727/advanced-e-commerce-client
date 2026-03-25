@@ -411,9 +411,8 @@ export default function OrderHistory() {
             );
         }).then((res) => console.log('success'));
 
-        if (order.status === 'Picked' || order.status === 'Completed') {
+        if (order.status === 'Picked') {
             steps[1].active = true;
-            steps[2].active = true;
         } else {
             steps[1].active = false;
         }

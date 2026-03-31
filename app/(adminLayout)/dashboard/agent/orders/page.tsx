@@ -3,6 +3,11 @@ import AgentOrdersTable from '@/dashboard-components/agent-dashboard/agent-order
 import { getProfileDataApi } from '@/services/AuthService';
 import { getOrdersOfAgentApi } from '@/services/CartServices';
 
+export const metadata = {
+    title: 'Assigned Deliveries',
+    description: 'an e-commerce website',
+};
+
 const Page = async () => {
     const resp = await getProfileDataApi();
     const user = resp.data;

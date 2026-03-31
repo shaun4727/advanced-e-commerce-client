@@ -1,6 +1,11 @@
 import UpdateProductForm from '@/dashboard-components/products-components/product-sub-components/UpdateProductForm';
 import { getSingleProduct } from '@/services/ProductServices';
 
+export const metadata = {
+    title: 'Update Product',
+    description: 'an e-commerce website',
+};
+
 const UpdateProductPage = async ({
     params,
 }: {

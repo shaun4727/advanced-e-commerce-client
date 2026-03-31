@@ -3,6 +3,11 @@ import NavMenuBuilder from '@/dashboard-components/nav-menu-builder/nav-builder-
 import { getAllCategories } from '@/services/Category';
 import { getNavigationApi } from '@/services/NavmenuService';
 
+export const metadata = {
+    title: 'Create Navigation',
+    description: 'an e-commerce website',
+};
+
 const page = async () => {
     const res = await getNavigationApi();
     const { data: categories } = await getAllCategories();

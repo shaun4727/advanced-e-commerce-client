@@ -9,6 +9,11 @@ import {
     getTrendingProductsApi,
 } from '@/services/ProductServices';
 
+export const metadata = {
+    title: 'Home',
+    description: 'an e-commerce website',
+};
+
 export default async function Home() {
     const { data: trendingProducts } = await getTrendingProductsApi();
     const { data: flashSaleProducts } = await getFlashSaleProductsApi();

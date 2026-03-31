@@ -57,7 +57,8 @@ export default function AgentOrdersTable({
             }
         } else if (newStatus === 'Delivered') {
             const res = await updateAgentDeliveryStatusApi(agentId);
-            if (res.success && res.data.picked) {
+
+            if (res.success) {
                 setOrders(
                     (prev) =>
                         prev &&
@@ -66,6 +67,7 @@ export default function AgentOrdersTable({
                         ),
                 );
                 socket.emit('OrderDelivered', { orderId });
+                setOrders([]);
             }
         }
 

@@ -31,6 +31,11 @@ const initialItems: MyNavItem[] = [
     },
 ];
 
+const metadata = {
+    title: 'Sortable Tree',
+    description: 'an e-commerce website',
+};
+
 const MinimalTreeItemComponent = React.forwardRef<
     HTMLDivElement,
     TreeItemComponentProps<MyNavItem>

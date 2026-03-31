@@ -367,21 +367,26 @@ export default function ShoppingCartSection() {
 
                                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
                                                             {/* Price */}
+
                                                             <div className="flex items-center space-x-2">
                                                                 <span className="text-xl font-bold text-blue-600">
                                                                     $
-                                                                    {item.price.toFixed(
-                                                                        2,
-                                                                    )}
+                                                                    {item.offerPrice
+                                                                        ? item.offerPrice.toFixed(
+                                                                              2,
+                                                                          )
+                                                                        : item.price.toFixed(
+                                                                              2,
+                                                                          )}
                                                                 </span>
-                                                                {item.offerPrice && (
+                                                                {/* {item.offerPrice && (
                                                                     <span className="text-sm text-gray-500 line-through">
                                                                         $
                                                                         {item.offerPrice.toFixed(
                                                                             2,
                                                                         )}
                                                                     </span>
-                                                                )}
+                                                                )} */}
                                                             </div>
 
                                                             {/* Quantity Controls */}
@@ -442,13 +447,21 @@ export default function ShoppingCartSection() {
                                                             <div className="text-right">
                                                                 <span className="text-lg font-semibold text-gray-900">
                                                                     $
-                                                                    {item.orderQuantity &&
-                                                                        (
-                                                                            item.price *
-                                                                            item.orderQuantity
-                                                                        ).toFixed(
-                                                                            2,
-                                                                        )}
+                                                                    {item.orderQuantity
+                                                                        ? item.offerPrice
+                                                                            ? (
+                                                                                  item.offerPrice *
+                                                                                  item.orderQuantity
+                                                                              ).toFixed(
+                                                                                  2,
+                                                                              )
+                                                                            : (
+                                                                                  item.price *
+                                                                                  item.orderQuantity
+                                                                              ).toFixed(
+                                                                                  2,
+                                                                              )
+                                                                        : '0.00'}
                                                                 </span>
                                                             </div>
                                                         </div>

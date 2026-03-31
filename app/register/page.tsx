@@ -14,6 +14,11 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+const metadata = {
+    title: 'Register',
+    description: 'an e-commerce website',
+};
+
 const page = () => {
     const router = useRouter();
     const {

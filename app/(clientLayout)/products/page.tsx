@@ -3,6 +3,11 @@ import { getAllProducts } from '@/services/ProductServices';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
+export const metadata = {
+    title: 'Products',
+    description: 'an e-commerce website',
+};
+
 const AllProductsPage = async ({
     searchParams,
 }: {

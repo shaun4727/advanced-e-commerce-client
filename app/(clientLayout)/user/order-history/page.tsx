@@ -1,5 +1,10 @@
 import OrderHistory from '@/components/order-history/page';
 
+export const metadata = {
+    title: 'Order History',
+    description: 'an e-commerce website',
+};
+
 export default function OrderHistoryPage() {
     return (
         <div>

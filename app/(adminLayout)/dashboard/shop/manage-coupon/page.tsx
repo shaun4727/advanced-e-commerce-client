@@ -3,6 +3,11 @@ import CouponTable from '@/components/manage-coupon/coupon-table';
 import CreateCouponModal from '@/components/manage-coupon/create-coupon-modal';
 import { getAllCouponApi } from '@/services/CartServices';
 
+export const metadata = {
+    title: 'Coupon',
+    description: 'an e-commerce website',
+};
+
 export default async function ManageCouponPage() {
     let data: any = null;
 

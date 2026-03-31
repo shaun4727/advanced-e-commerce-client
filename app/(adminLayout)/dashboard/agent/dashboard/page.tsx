@@ -6,6 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProfileDataApi } from '@/services/AuthService';
 import { Clock, Mail, MapPin, Monitor, ShieldCheck } from 'lucide-react';
 
+export const metadata = {
+    title: 'Agent Dashboard',
+    description: 'an e-commerce website',
+};
+
 const page = async () => {
     const res = await getProfileDataApi();
     const user = res.data;

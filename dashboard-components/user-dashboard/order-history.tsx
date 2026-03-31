@@ -285,7 +285,7 @@ export default function OrderHistory() {
         socket.on('ReceivedOrder', handleReceivedOrder);
 
         if (activeOrder?.status === 'Completed') {
-            steps[1].active = true;
+            steps[1].active = false;
             steps[2].active = true;
         }
 

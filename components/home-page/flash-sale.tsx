@@ -39,17 +39,99 @@ export const FlashSale = ({
         router.push(`/products/${product._id}`);
     };
 
+    useEffect(() => {
+        // This forces GSAP to recalculate the 'start' and 'end' points
+        // of all ScrollTriggers once the products are actually rendered.
+        if (trendingProducts?.length > 0) {
+            ScrollTrigger.refresh();
+        }
+    }, [trendingProducts]);
+
+    useLayoutEffect(() => {
+        let ctx = gsap.context(() => {
+            const tl = gsap.timeline({
+                delay: 0.5,
+                // ScrollTrigger configuration
+                scrollTrigger: {
+                    trigger: trendingSection.current, // The container that activates the trigger
+                    start: 'top 10%', // Start animation when top of trigger is 80% down the viewport
+                    toggleActions: 'play none none none', // Play once on entry
+                    // markers: true,           // Uncomment this line to debug trigger positions
+                },
+            });
+
+            // --- Reveal The Headline ---
+            tl.fromTo(
+                '.reveal-bar-trending', // The red bar covering the text
+                { scaleX: 1, transformOrigin: 'right' }, // Start state (fully expanded)
+                { scaleX: 0, duration: 0.5, ease: 'power2.inOut' }, // End state (shrunk to reveal)
+            )
+                // Move the headline text slightly to enhance the effect
+                .fromTo(
+                    '.reveal-text-trending',
+                    { x: 10, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 0.5, ease: 'power1.out' },
+                    '<0.4', // Start this tween 0.2s after the previous one starts
+                );
+
+            gsap.from('.trending-card-anim', {
+                scrollTrigger: {
+                    trigger: trendingCardContainerRef.current, // The element to watch
+                    start: 'top 2%', // <--- CHANGE THIS
+                    toggleActions: 'play none none none',
+                },
+                y: 60,
+                opacity: 0,
+                duration: 0.8,
+                ease: 'power3.out',
+                stagger: 0.1,
+            });
+
+            gsap.from('.trending-button', {
+                scrollTrigger: {
+                    trigger: '.trending-button',
+                    start: 'top 2%',
+                    toggleActions: 'play none none none',
+                },
+                y: 60,
+                opacity: 0,
+                duration: 0.8,
+                ease: 'power3.inOut',
+            });
+        }, trendingSection);
+
+        gsap.from('.trending-button', {
+            scrollTrigger: {
+                trigger: trendingCardContainerRef.current,
+            },
+        });
+
+        /* GSAP Position Parameters Cheat Sheet:
+        --------------------------------------
+        '<'  : Start at the SAME TIME as the PREVIOUS animation starts.
+        '>'  : Start at the EXACT MOMENT the PREVIOUS animation ends (Default).
+        '+=' : Start with a GAP after the previous animation ends (e.g., '+=0.5').
+        '-=' : Start BEFORE the previous animation ends (Overlap) (e.g., '-=0.2').
+        '<'0.5 : Start 0.5s AFTER the PREVIOUS animation started.
+        */
+
+        return () => ctx.revert();
+    }, [trendingProducts]);
+
     return (
         <div className="w-full mt-16 px-2.5 md:px-16">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center flash-sign">
                             <Zap className="h-5 w-5 text-white" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900">
-                            Flash Sale
-                        </h2>
+                        <div className="relative">
+                            <p className="absolute inset-y-0 right-0 w-full bg-revealer flash-revealer"></p>
+                            <h2 className="text-2xl font-bold text-gray-900 flash-text-revealer">
+                                Flash Sale
+                            </h2>
+                        </div>
                     </div>
                     <CountdownTimer />
                 </div>

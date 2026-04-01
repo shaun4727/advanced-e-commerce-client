@@ -1,12 +1,17 @@
 'use client';
 
 import { IProduct } from '@/types';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { CountdownTimer } from './flash-sale-components/count-down-timer';
 import { ProductCard } from './flash-sale-components/product-card';
+
+// Register the ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
 
 export const FlashSale = ({
     flashSaleProducts,
@@ -16,6 +21,7 @@ export const FlashSale = ({
     const [currentIndex, setCurrentIndex] = useState(0);
     const itemsPerView = 4;
     const router = useRouter();
+    const flashSaleSectionRef = useRef(null);
 
     const nextSlide = () => {
         setCurrentIndex(
@@ -42,10 +48,10 @@ export const FlashSale = ({
     useEffect(() => {
         // This forces GSAP to recalculate the 'start' and 'end' points
         // of all ScrollTriggers once the products are actually rendered.
-        if (trendingProducts?.length > 0) {
+        if (flashSaleProducts?.length > 0) {
             ScrollTrigger.refresh();
         }
-    }, [trendingProducts]);
+    }, [flashSaleProducts]);
 
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
@@ -53,7 +59,7 @@ export const FlashSale = ({
                 delay: 0.5,
                 // ScrollTrigger configuration
                 scrollTrigger: {
-                    trigger: trendingSection.current, // The container that activates the trigger
+                    trigger: flashSaleSectionRef.current, // The container that activates the trigger
                     start: 'top 10%', // Start animation when top of trigger is 80% down the viewport
                     toggleActions: 'play none none none', // Play once on entry
                     // markers: true,           // Uncomment this line to debug trigger positions
@@ -62,22 +68,24 @@ export const FlashSale = ({
 
             // --- Reveal The Headline ---
             tl.fromTo(
-                '.reveal-bar-trending', // The red bar covering the text
+                '.flash-bar-revealer', // The red bar covering the text
                 { scaleX: 1, transformOrigin: 'right' }, // Start state (fully expanded)
                 { scaleX: 0, duration: 0.5, ease: 'power2.inOut' }, // End state (shrunk to reveal)
             )
                 // Move the headline text slightly to enhance the effect
                 .fromTo(
-                    '.reveal-text-trending',
+                    '.flash-text-revealer',
                     { x: 10, opacity: 0 },
                     { x: 0, opacity: 1, duration: 0.5, ease: 'power1.out' },
                     '<0.4', // Start this tween 0.2s after the previous one starts
-                );
+                )
+                .from('.flash-sign', { x: 30, opacity: 0 }, '<0.4')
+                .from('.flash-timer', { y: 10, opacity: 0 }, '<0.3');
 
-            gsap.from('.trending-card-anim', {
+            gsap.from('.flash-card-anim', {
                 scrollTrigger: {
-                    trigger: trendingCardContainerRef.current, // The element to watch
-                    start: 'top 2%', // <--- CHANGE THIS
+                    trigger: flashSaleSectionRef.current, // The element to watch
+                    start: 'bottom 35%', // <--- CHANGE THIS
                     toggleActions: 'play none none none',
                 },
                 y: 60,
@@ -87,9 +95,9 @@ export const FlashSale = ({
                 stagger: 0.1,
             });
 
-            gsap.from('.trending-button', {
+            gsap.from('.flash-button', {
                 scrollTrigger: {
-                    trigger: '.trending-button',
+                    trigger: '.flash-button',
                     start: 'top 2%',
                     toggleActions: 'play none none none',
                 },
@@ -98,13 +106,7 @@ export const FlashSale = ({
                 duration: 0.8,
                 ease: 'power3.inOut',
             });
-        }, trendingSection);
-
-        gsap.from('.trending-button', {
-            scrollTrigger: {
-                trigger: trendingCardContainerRef.current,
-            },
-        });
+        }, flashSaleSectionRef);
 
         /* GSAP Position Parameters Cheat Sheet:
         --------------------------------------
@@ -116,10 +118,10 @@ export const FlashSale = ({
         */
 
         return () => ctx.revert();
-    }, [trendingProducts]);
+    }, [flashSaleProducts]);
 
     return (
-        <div className="w-full mt-16 px-2.5 md:px-16">
+        <div className="w-full mt-16 px-2.5 md:px-16" ref={flashSaleSectionRef}>
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-3">
@@ -127,13 +129,15 @@ export const FlashSale = ({
                             <Zap className="h-5 w-5 text-white" />
                         </div>
                         <div className="relative">
-                            <p className="absolute inset-y-0 right-0 w-full bg-revealer flash-revealer"></p>
+                            <p className="absolute inset-y-0 right-0 w-full bg-revealer flash-bar-revealer"></p>
                             <h2 className="text-2xl font-bold text-gray-900 flash-text-revealer">
                                 Flash Sale
                             </h2>
                         </div>
                     </div>
-                    <CountdownTimer />
+                    <div className="flash-timer">
+                        <CountdownTimer />
+                    </div>
                 </div>
 
                 {/* Navigation Arrows */}
@@ -158,7 +162,7 @@ export const FlashSale = ({
             </div>
 
             {/* Products Grid */}
-            <div className="relative">
+            <div className="relative ">
                 {/* Desktop Grid */}
                 <div className="hidden md:block py-4 overflow-hidden">
                     <div
@@ -170,7 +174,7 @@ export const FlashSale = ({
                         {flashSaleProducts?.map((product: IProduct, index) => (
                             <div
                                 key={index}
-                                className="w-1/4 shrink-0 px-3 cursor-pointer"
+                                className="w-1/4 shrink-0 px-3 cursor-pointer flash-card-anim"
                                 onClick={() => viewProduct(product)}
                             >
                                 <ProductCard product={product} />
@@ -185,7 +189,7 @@ export const FlashSale = ({
                         {flashSaleProducts?.map((product: IProduct, index) => (
                             <div
                                 key={index}
-                                className="w-64 shrink-0"
+                                className="w-64 shrink-0 flash-card-anim"
                                 onClick={() => viewProduct(product)}
                             >
                                 <ProductCard product={product} />
@@ -203,7 +207,7 @@ export const FlashSale = ({
                         router.push(`/products?flashSale=1`);
                     }}
                     size="lg"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors duration-200"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors duration-200 flash-button"
                 >
                     View All Flash Sale Items
                 </Button>

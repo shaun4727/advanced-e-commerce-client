@@ -15,6 +15,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 const footerSections = {
     contactUs: {
@@ -76,10 +79,57 @@ const paymentMethods = [
 ];
 
 export default function FooterSection() {
+    const footerSectionRef = useRef(null);
+
+    useEffect(() => {
+        ScrollTrigger.refresh();
+    }, []);
+
+    useLayoutEffect(() => {
+        let ctx = gsap.context(() => {
+            // Create a timeline that triggers when the footer section hits the viewport
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: footerSectionRef.current,
+                    start: 'top 0%', // Trigger when the top of the footer is 80% down the screen
+                    toggleActions: 'play none none none',
+                },
+            });
+
+            // 1. Reveal the Main Footer sections first
+            tl.from('.footer-section', {
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.2,
+                delay: 0.4,
+                ease: 'power3.out',
+            })
+                // 2. Reveal the Newsletter section AFTER the footer starts appearing
+                .fromTo(
+                    '.newsletter-section',
+                    {
+                        height: 0, // Starts collapsed
+                        opacity: 0,
+                        y: -30,
+                    },
+                    {
+                        height: 'auto', // Expands and pushes the footer down
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        ease: 'expo.out',
+                    },
+                    '>0.2', // Start this slightly before the footer finish for smoothness
+                );
+        }, footerSectionRef);
+
+        return () => ctx.revert();
+    }, []);
     return (
-        <footer className="bg-gray-900 text-gray-300">
+        <footer className=" text-gray-300" ref={footerSectionRef}>
             {/* Newsletter Section */}
-            <div className="bg-blue-600 py-8">
+            <div className="bg-blue-600 py-8 opacity-0 newsletter-section">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         <div className="text-center md:text-left">
@@ -106,7 +156,7 @@ export default function FooterSection() {
             </div>
 
             {/* Main Footer Content */}
-            <div className="container mx-auto px-4 py-12">
+            <div className="bg-gray-900 mx-auto md:px-16 py-12 footer-section">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Contact Us */}
                     <div className="space-y-6">
@@ -240,10 +290,10 @@ export default function FooterSection() {
                 </div>
             </div>
 
-            <Separator className="bg-gray-700" />
+            <Separator className="bg-gray-700 footer-section" />
 
             {/* Bottom Footer */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="bg-gray-900 md:px-16 mx-auto px-4 py-8 footer-section">
                 <div className="flex flex-col lg:flex-row items-center justify-between space-y-6 lg:space-y-0">
                     {/* Social Media Links */}
                     <div className="flex items-center space-x-4">

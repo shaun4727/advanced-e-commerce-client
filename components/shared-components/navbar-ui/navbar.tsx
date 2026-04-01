@@ -9,10 +9,12 @@ import {
 } from '@/redux/features/cartSlice';
 import { useAppSelector } from '@/redux/hooks';
 import { getNavigationMenuApi } from '@/services/NavmenuService';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 import { Search, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { NavigationRow } from './navbar-row';
 
@@ -23,6 +25,31 @@ export const NavBar = () => {
     const router = useRouter();
     const { setIsLoading } = useUser();
     const [searchValue, setSearchValue] = useState<string>('');
+    const navSection = useRef(null);
+
+    useGSAP(
+        () => {
+            // We target navSection.current directly to avoid scope issues
+            gsap.fromTo(
+                navSection.current,
+                {
+                    y: -30, // Start slightly above
+                    opacity: 0,
+                    scale: 0.9,
+                    autoAlpha: 0, // GSAP helper: sets visibility:hidden and opacity:0
+                },
+                {
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    autoAlpha: 1, // Sets visibility:visible and opacity:1
+                    duration: 0.8,
+                    ease: 'power3.out',
+                },
+            );
+        },
+        { scope: navSection },
+    );
 
     const getNavigationMenuMethod = async () => {
         try {
@@ -48,7 +75,7 @@ export const NavBar = () => {
     }, []);
 
     return (
-        <header className="sticky top-0 z-30">
+        <header className="sticky top-0 z-30 opacity-0" ref={navSection}>
             <div className="bg-blue-700 flex flex-col justify-center items-center gap-2 py-2 md:flex-row md:gap-4 md:justify-between px-16  overflow-hidden">
                 <div className="">
                     <h1 className="text-xl font-bold text-yellow-400">Emart</h1>

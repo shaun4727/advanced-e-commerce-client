@@ -2,10 +2,12 @@
 
 import { useUser } from '@/context/UserContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { benefits, heroSlides } from './constants';
@@ -14,6 +16,31 @@ export const HeroSection = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const isMobile = useIsMobile();
     const { setIsLoading } = useUser();
+
+    const heroSection = useRef(null);
+
+    useGSAP(
+        () => {
+            // We target navSection.current directly to avoid scope issues
+            gsap.fromTo(
+                heroSection.current,
+                {
+                    y: 30, // Start slightly above
+                    opacity: 0,
+                    autoAlpha: 0, // GSAP helper: sets visibility:hidden and opacity:0
+                },
+                {
+                    y: 0,
+                    opacity: 1,
+                    autoAlpha: 1, // Sets visibility:visible and opacity:1
+                    duration: 0.8,
+                    delay: 0.4,
+                    ease: 'power3.out',
+                },
+            );
+        },
+        { scope: heroSection },
+    );
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -31,8 +58,8 @@ export const HeroSection = () => {
 
     const currentHero = heroSlides[currentSlide];
     return (
-        <div className="w-full md:px-16 z-10">
-            <div className="h-75 mt-4 relative w-full bg-black/40 md:mt-8">
+        <div className="w-full mt-12 md:px-16 z-10 opacity-0" ref={heroSection}>
+            <div className="h-115 mt-4 relative w-full bg-black/40 md:mt-8">
                 <div className="absolute inset-0">
                     <Image
                         src={currentHero?.image || '/placeholder.svg'}

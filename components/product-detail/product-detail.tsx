@@ -11,7 +11,7 @@ import {
     Truck,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,8 @@ import { addProduct } from '@/redux/features/cartSlice';
 import { useAppDispatch } from '@/redux/hooks';
 import { getAllProducts } from '@/services/ProductServices';
 import { IProduct } from '@/types';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useRouter } from 'next/navigation';
 
 function StarRating({
@@ -113,9 +115,9 @@ function SimilarProducts({ similarProduct }: { similarProduct: IProduct[] }) {
     };
     return (
         <div className="mt-16">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+            {/* <h3 className="text-2xl font-bold text-gray-900 mb-6">
                 Similar Products
-            </h3>
+            </h3> */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {similarProduct.map((product) => (
                     <Card
@@ -162,11 +164,15 @@ function SimilarProducts({ similarProduct }: { similarProduct: IProduct[] }) {
     );
 }
 
+// Register the ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
+
 export default function ProductDetail({ product }: { product: IProduct }) {
     const [quantity, setQuantity] = useState(1);
     const [email, setEmail] = useState('');
     const dispatch = useAppDispatch();
     const [similarProduct, setSimilarProduct] = useState<IProduct[]>([]);
+    const productSectionRef = useRef(null);
 
     const incrementQuantity = () => setQuantity((prev) => prev + 1);
     const decrementQuantity = () =>
@@ -182,8 +188,61 @@ export default function ProductDetail({ product }: { product: IProduct }) {
     };
 
     useEffect(() => {
+        ScrollTrigger.refresh();
         getSimilarProducts();
     }, []);
+
+    useLayoutEffect(() => {
+        if (!product) return;
+
+        let ctx = gsap.context(() => {
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: productSectionRef.current,
+                    start: 'top 50%', // Triggers when the section is visible
+                    toggleActions: 'play none none none',
+                },
+            });
+
+            // Header Reveal
+            tl.from('.download-emart-app', {
+                opacity: 0,
+                y: 30,
+                duration: 0.8,
+                ease: 'power3.in',
+            })
+                .from(
+                    '.newsletter-card',
+                    {
+                        opacity: 0,
+                        y: 30,
+                        duration: 0.8,
+                        ease: 'power3.in',
+                    },
+                    '-=0.2',
+                )
+                .fromTo(
+                    '.product-name-text-revealer',
+                    { scaleX: 1, transformOrigin: 'right' },
+                    { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
+                    '-=0.1', // Overlap with previous
+                )
+                .fromTo(
+                    '.description-text-revealer',
+                    { scaleX: 1, transformOrigin: 'right' },
+                    { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
+                    '-=0.1', // Overlap with previous
+                )
+                .from('.add-to-cart-section', {
+                    opacity: 0,
+                    y: -30,
+                    duration: 0.5,
+                    ease: 'expo.inOut',
+                });
+
+            return () => ctx.revert();
+        }, productSectionRef);
+    }, [product]);
 
     const getSimilarProducts = async () => {
         try {
@@ -200,13 +259,13 @@ export default function ProductDetail({ product }: { product: IProduct }) {
     };
 
     return (
-        <div className="w-full bg-gray-50 py-8">
+        <div className="w-full bg-gray-50 py-8" ref={productSectionRef}>
             <div className="container mx-auto px-4">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar */}
                     <div className="lg:w-1/4 space-y-6">
                         {/* App Download Banner */}
-                        <Card className="bg-yellow-400 border-0">
+                        <Card className="bg-yellow-400 border-0 download-emart-app">
                             <CardContent className="p-6 text-center">
                                 <div className="flex justify-center mb-4">
                                     <div className="flex items-center space-x-2">
@@ -223,7 +282,7 @@ export default function ProductDetail({ product }: { product: IProduct }) {
                         </Card>
 
                         {/* Newsletter */}
-                        <Card>
+                        <Card className="newsletter-card">
                             <CardContent className="p-6">
                                 <h3 className="font-bold text-gray-900 mb-4">
                                     NEWSLETTERS
@@ -263,9 +322,12 @@ export default function ProductDetail({ product }: { product: IProduct }) {
                             {/* Product Details */}
                             <div className="space-y-6">
                                 <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                                        {product.name}
-                                    </h1>
+                                    <div className="relative">
+                                        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                                            {product.name}
+                                        </h1>
+                                        <p className="absolute inset-y-0 w-full right-0 bg-revealer product-name-text-revealer"></p>
+                                    </div>
                                     <StarRating
                                         rating={product.ratingCount}
                                         reviewCount={0}
@@ -292,9 +354,12 @@ export default function ProductDetail({ product }: { product: IProduct }) {
                                     </Badge>
                                 </div>
 
-                                <p className="text-gray-600 leading-relaxed">
-                                    {product.description}
-                                </p>
+                                <div className="relative">
+                                    <p className="text-gray-600 leading-relaxed">
+                                        {product.description}
+                                    </p>
+                                    <p className="absolute inset-y-0 right-0 bg-revealer w-full description-text-revealer"></p>
+                                </div>
 
                                 <div className="flex items-center space-x-4">
                                     <span className="text-3xl font-bold text-red-500">
@@ -345,7 +410,7 @@ export default function ProductDetail({ product }: { product: IProduct }) {
                                         </div>
                                     </div>
 
-                                    <div className="flex space-x-3">
+                                    <div className="flex space-x-3 add-to-cart-section">
                                         <Button
                                             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                                             onClick={() =>

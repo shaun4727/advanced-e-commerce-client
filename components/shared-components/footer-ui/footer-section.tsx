@@ -19,6 +19,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 
+// Register the ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
+
 const footerSections = {
     contactUs: {
         title: 'CONTACT US',

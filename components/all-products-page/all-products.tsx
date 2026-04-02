@@ -22,7 +22,7 @@ export const AllProducts = () => {
                         {/* Main Content */}
                         <div className="lg:w-3/4">
                             {/* Promotional Banner */}
-                            <div className="relative h-64 md:h-80 mb-8 rounded-lg overflow-hidden">
+                            <div className="relative h-64 md:h-80 mb-8 rounded-lg overflow-hidden big-sale-section">
                                 <Image
                                     src="/images/big-sale.jpg"
                                     alt="Big Sale Banner"

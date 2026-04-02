@@ -2,7 +2,7 @@
 
 import { Grid3X3, List, Star } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +16,9 @@ import { homePageBrandWithProduct } from '@/services/Brand';
 import { IBrandWithProducts, IMeta, IProduct } from '@/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+// GSAP Imports
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 interface Brand {
     id: string;
@@ -72,6 +75,9 @@ interface filterOptionList {
     rating: number[];
 }
 
+// Register the ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
+
 export default function AllProductsSection({
     products,
     meta,
@@ -93,6 +99,7 @@ export default function AllProductsSection({
         rating: [],
     });
     const searchParams = useSearchParams();
+    const allProductSectionRef = useRef(null);
 
     const toggleBrand = (brandId: string) => {
         setSelectedBrands((prev) =>
@@ -116,8 +123,60 @@ export default function AllProductsSection({
     };
 
     useEffect(() => {
+        ScrollTrigger.refresh();
         getBrandsWithProducts();
     }, []);
+
+    useLayoutEffect(() => {
+        if (!products || products.length === 0) return;
+
+        let ctx = gsap.context(() => {
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: allProductSectionRef.current,
+                    start: 'top 50%', // Triggers when the section is visible
+                    toggleActions: 'play none none none',
+                },
+            });
+
+            // Header Reveal
+            tl.from('.big-sale-section', {
+                opacity: 0,
+                y: 30,
+                duration: 0.8,
+                ease: 'power3.in',
+            })
+                .from(
+                    '.all-products-filter-section',
+                    {
+                        opacity: 0,
+                        x: -30,
+                        duration: 0.8,
+                        ease: 'power3.inOut',
+                    },
+                    '-=0.4',
+                )
+                .from(
+                    '.grid-list-section',
+                    {
+                        opacity: 0,
+                        y: -30,
+                        duration: 0.8,
+                        ease: 'expo.out',
+                    },
+                    '-=0.1',
+                )
+                .from('.product-card-anim', {
+                    y: 30,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power3.inOut',
+                    stagger: 0.3,
+                });
+
+            return () => ctx.revert();
+        }, allProductSectionRef);
+    }, [products]);
 
     // const clearAllFilters = () => {
     //   setPriceRange([200, 800]);
@@ -207,11 +266,11 @@ export default function AllProductsSection({
     };
 
     return (
-        <div className="w-full bg-gray-50 py-8">
+        <div className="w-full bg-gray-50 py-8" ref={allProductSectionRef}>
             <div className="container mx-auto px-4">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar Filters */}
-                    <div className="lg:w-1/4">
+                    <div className="lg:w-1/4 all-products-filter-section">
                         <Card className="sticky top-4">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between mb-6">
@@ -416,7 +475,7 @@ export default function AllProductsSection({
                     {/* Main Content */}
                     <div className="lg:w-3/4">
                         {/* Promotional Banner */}
-                        <div className="relative h-64 md:h-80 mb-8 rounded-lg overflow-hidden">
+                        <div className="relative h-64 md:h-80 mb-8 rounded-lg overflow-hidden big-sale-section">
                             <Image
                                 src="/images/big-sale.jpg"
                                 alt="Big Sale Banner"
@@ -440,7 +499,7 @@ export default function AllProductsSection({
                         {/* Product Controls */}
                         <div className="flex flex-col md:flex-col justify-between items-start md:items-center gap-4 mb-6">
                             {/* View Mode Toggle */}
-                            <div className="w-full flex items-center space-x-2">
+                            <div className="w-full flex items-center space-x-2 grid-list-section">
                                 <Button
                                     variant={
                                         viewMode === 'grid'
@@ -491,7 +550,7 @@ export default function AllProductsSection({
                                             onClick={() =>
                                                 getDetailOfTheProduct(product)
                                             }
-                                            className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                                            className="hover:shadow-lg transition-shadow duration-200 cursor-pointer product-card-anim"
                                         >
                                             <CardContent
                                                 className={

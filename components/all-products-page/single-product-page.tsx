@@ -17,7 +17,6 @@ import { Input } from '../ui/input';
 import { Separator } from '../ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ProductGallery } from './sub-components/product-gallery';
-import { SimilarProducts } from './sub-components/similar-products';
 
 export const SingleProductPage = () => {
     return (
@@ -333,7 +332,7 @@ export const SingleProductPage = () => {
                         </div>
 
                         {/* Similar Products */}
-                        <SimilarProducts />
+                        {/* <SimilarProducts /> */}
                     </div>
                 </div>
             </div>

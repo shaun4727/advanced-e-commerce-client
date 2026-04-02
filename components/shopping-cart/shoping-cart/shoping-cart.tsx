@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import SpinnerLoader from '@/components/loaders/loader-component';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +61,8 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { createOrder } from '@/services/CartServices';
 import { IProduct } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -76,6 +78,9 @@ const shippingAddressSchema = z.object({
 });
 
 type shippingAddressData = z.infer<typeof shippingAddressSchema>;
+
+// Register the ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
 
 export default function ShoppingCartSection() {
     const [promoCode, setPromoCode] = useState('');
@@ -96,6 +101,7 @@ export default function ShoppingCartSection() {
     const shopId = useAppSelector(shopSelector);
     const globalLoadingState = useAppSelector(globalStateLoaderSelector);
     const { socket, connected } = useSocket();
+    const shoppingCartSectionRef = useRef(null);
 
     const {
         register,
@@ -115,6 +121,7 @@ export default function ShoppingCartSection() {
     });
 
     useEffect(() => {
+        ScrollTrigger.refresh();
         if (shippingAddress) {
             reset({
                 city: shippingAddress.city || '',
@@ -125,6 +132,51 @@ export default function ShoppingCartSection() {
             });
         }
     }, [shippingAddress, reset]);
+
+    useLayoutEffect(() => {
+        let ctx = gsap.context(() => {
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: shoppingCartSectionRef.current,
+                    start: 'top 50%', // Triggers when the section is visible
+                    toggleActions: 'play none none none',
+                },
+            });
+
+            // Header Reveal
+            tl.from('.download-emart-app', {
+                opacity: 0,
+                y: 30,
+                duration: 0.8,
+                ease: 'power3.in',
+            })
+                .from(
+                    '.newsletter-card',
+                    {
+                        opacity: 0,
+                        y: 30,
+                        duration: 0.8,
+                        ease: 'power3.in',
+                    },
+                    '-=0.2',
+                )
+
+                .fromTo(
+                    '.cart-revealer-text',
+                    { scaleX: 1, transformOrigin: 'right' },
+                    { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
+                    '-=0.1', // Overlap with previous
+                )
+                .from('.add-to-cart-section', {
+                    opacity: 0,
+                    y: -30,
+                    duration: 0.5,
+                    ease: 'expo.inOut',
+                });
+
+            return () => ctx.revert();
+        }, shoppingCartSectionRef);
+    }, []);
 
     const incrementQuantity = (id: string) => {
         dispatch(incrementOrderQuantity(id));
@@ -239,7 +291,10 @@ export default function ShoppingCartSection() {
     //   };
 
     return (
-        <div className="w-full bg-gray-50 min-h-screen py-8">
+        <div
+            className="w-full bg-gray-50 min-h-screen py-8"
+            ref={shoppingCartSectionRef}
+        >
             {globalLoadingState && <SpinnerLoader />}
             {!globalLoadingState && (
                 <div className="container mx-auto px-4">
@@ -257,9 +312,12 @@ export default function ShoppingCartSection() {
                                 </Button>
                             </Link>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">
-                                    Shopping Cart
-                                </h1>
+                                <div className="relative">
+                                    <h1 className="text-3xl font-bold text-gray-900">
+                                        Shopping Cart
+                                    </h1>
+                                    <p className="absolute bg-revealer w-full inset-y-0 right-0 cart-revealer-text"></p>
+                                </div>
                                 <p className="text-gray-600">
                                     {cartProducts.length ?? '0'} items in your
                                     cart
@@ -279,7 +337,7 @@ export default function ShoppingCartSection() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Cart Items */}
-                        <div className="lg:col-span-2 space-y-4">
+                        <div className="lg:col-span-2 space-y-4 shopping-cart-part">
                             {products.length === 0 ? (
                                 <Card>
                                     <CardContent className="p-12 text-center">

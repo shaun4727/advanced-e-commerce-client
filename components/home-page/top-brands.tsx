@@ -57,7 +57,7 @@ export const TopBrandsComponent = ({ allBrands }: { allBrands: IBrand[] }) => {
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: topBrandSectionRef.current,
-                    start: 'bottom 10%', // Triggers when the section is visible
+                    start: 'bottom 40%', // Triggers when the section is visible
                     toggleActions: 'play none none none',
                 },
             });

@@ -55,64 +55,62 @@ export const TrendingProducts = ({
     }, [trendingProducts]);
 
     useLayoutEffect(() => {
-        let ctx = gsap.context(() => {
-            const tl = gsap.timeline({
-                delay: 0.5,
-                // ScrollTrigger configuration
-                scrollTrigger: {
-                    trigger: trendingSection.current, // The container that activates the trigger
-                    start: 'top 10%', // Start animation when top of trigger is 80% down the viewport
-                    toggleActions: 'play none none none', // Play once on entry
-                    // markers: true,           // Uncomment this line to debug trigger positions
-                },
-            });
+        const mm = gsap.matchMedia();
 
-            // --- Reveal The Headline ---
-            tl.fromTo(
-                '.reveal-bar-trending', // The red bar covering the text
-                { scaleX: 1, transformOrigin: 'right' }, // Start state (fully expanded)
-                { scaleX: 0, duration: 0.5, ease: 'power2.inOut' }, // End state (shrunk to reveal)
-            )
-                // Move the headline text slightly to enhance the effect
-                .fromTo(
-                    '.reveal-text-trending',
-                    { x: 10, opacity: 0 },
-                    { x: 0, opacity: 1, duration: 0.5, ease: 'power1.out' },
-                    '<0.4', // Start this tween 0.2s after the previous one starts
+        mm.add(
+            {
+                // Define your breakpoints
+                isDesktop: '(min-width: 768px)',
+                isMobile: '(max-width: 767px)',
+            },
+            (context) => {
+                const { isDesktop, isMobile } = context.conditions || {};
+
+                // Common Header Animation (Works on both, but we can tweak values)
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: trendingSection.current,
+                        // Desktop starts at 10%, Mobile triggers earlier at 85% down the screen
+                        start: isDesktop ? 'top 10%' : 'top 75%',
+                        once: true,
+                    },
+                });
+
+                tl.fromTo(
+                    '.reveal-bar-trending',
+                    { scaleX: 1, transformOrigin: 'right' },
+                    { scaleX: 0, duration: 0.5 },
                 );
 
-            gsap.from('.trending-card-anim', {
-                scrollTrigger: {
-                    trigger: trendingCardContainerRef.current, // The element to watch
-                    start: 'top 2%', // <--- CHANGE THIS
-                    toggleActions: 'play none none none',
-                },
-                y: 60,
-                opacity: 0,
-                duration: 0.8,
-                ease: 'power3.out',
-                stagger: 0.1,
-            });
+                // --- Desktop Specific Animation ---
+                if (isDesktop) {
+                    gsap.from('.trending-card-anim', {
+                        scrollTrigger: {
+                            trigger: trendingCardContainerRef.current,
+                            start: 'top 2%',
+                        },
+                        x: 100, // Slide in from the right on desktop
+                        opacity: 0,
+                        stagger: 0.1,
+                        duration: 1,
+                    });
+                }
 
-            gsap.from('.trending-button', {
-                scrollTrigger: {
-                    trigger: '.trending-button',
-                    start: 'top 2%',
-                    toggleActions: 'play none none none',
-                },
-                y: 60,
-                opacity: 0,
-                duration: 0.8,
-                ease: 'power3.inOut',
-            });
-        }, trendingSection);
-
-        gsap.from('.trending-button', {
-            scrollTrigger: {
-                trigger: trendingCardContainerRef.current,
+                // --- Mobile Specific Animation ---
+                if (isMobile) {
+                    gsap.from('.trending-card-anim', {
+                        scrollTrigger: {
+                            trigger: trendingCardContainerRef.current,
+                            start: 'top 75%', // Trigger much earlier on scroll
+                        },
+                        y: 30, // Subtle lift up on mobile
+                        opacity: 0,
+                        stagger: 0.05, // Faster stagger for mobile grids
+                        duration: 0.6,
+                    });
+                }
             },
-        });
-
+        );
         /* GSAP Position Parameters Cheat Sheet:
         --------------------------------------
         '<'  : Start at the SAME TIME as the PREVIOUS animation starts.
@@ -121,8 +119,7 @@ export const TrendingProducts = ({
         '-=' : Start BEFORE the previous animation ends (Overlap) (e.g., '-=0.2').
         '<'0.5 : Start 0.5s AFTER the PREVIOUS animation started.
         */
-
-        return () => ctx.revert();
+        return () => mm.revert(); // Clean up everything!
     }, [trendingProducts]);
 
     return (

@@ -54,59 +54,101 @@ export const FlashSale = ({
     }, [flashSaleProducts]);
 
     useLayoutEffect(() => {
-        let ctx = gsap.context(() => {
-            const tl = gsap.timeline({
-                delay: 0.5,
-                // ScrollTrigger configuration
-                scrollTrigger: {
-                    trigger: flashSaleSectionRef.current, // The container that activates the trigger
-                    start: 'top 10%', // Start animation when top of trigger is 80% down the viewport
-                    toggleActions: 'play none none none', // Play once on entry
-                    // markers: true,           // Uncomment this line to debug trigger positions
-                },
-            });
+        const mm = gsap.matchMedia();
 
-            // --- Reveal The Headline ---
-            tl.fromTo(
-                '.flash-bar-revealer', // The red bar covering the text
-                { scaleX: 1, transformOrigin: 'right' }, // Start state (fully expanded)
-                { scaleX: 0, duration: 0.5, ease: 'power2.inOut' }, // End state (shrunk to reveal)
-            )
-                // Move the headline text slightly to enhance the effect
-                .fromTo(
-                    '.flash-text-revealer',
-                    { x: 10, opacity: 0 },
-                    { x: 0, opacity: 1, duration: 0.5, ease: 'power1.out' },
-                    '<0.4', // Start this tween 0.2s after the previous one starts
+        mm.add(
+            {
+                // Define your breakpoints
+                isDesktop: '(min-width: 768px)',
+                isMobile: '(max-width: 767px)',
+            },
+            (context) => {
+                const { isDesktop, isMobile } = context.conditions || {};
+
+                // Common Header Animation (Works on both, but we can tweak values)
+                const tl = gsap.timeline({
+                    delay: 0.5,
+                    scrollTrigger: {
+                        trigger: flashSaleSectionRef.current,
+                        // Desktop starts at 10%, Mobile triggers earlier at 85% down the screen
+                        start: isDesktop ? 'top 10%' : 'top 75%',
+                        toggleActions: 'play none none none', // Play once on entry
+                    },
+                });
+
+                // --- Reveal The Headline ---
+                tl.fromTo(
+                    '.flash-bar-revealer', // The red bar covering the text
+                    { scaleX: 1, transformOrigin: 'right' }, // Start state (fully expanded)
+                    { scaleX: 0, duration: 0.5, ease: 'power2.inOut' }, // End state (shrunk to reveal)
                 )
-                .from('.flash-sign', { x: 30, opacity: 0 }, '<0.4')
-                .from('.flash-timer', { y: 10, opacity: 0 }, '<0.3');
+                    // Move the headline text slightly to enhance the effect
+                    .fromTo(
+                        '.flash-text-revealer',
+                        { x: 10, opacity: 0 },
+                        { x: 0, opacity: 1, duration: 0.5, ease: 'power1.out' },
+                        '<0.4', // Start this tween 0.2s after the previous one starts
+                    )
+                    .from('.flash-sign', { x: 30, opacity: 0 }, '<0.4')
+                    .from('.flash-timer', { y: 10, opacity: 0 }, '<0.3');
 
-            gsap.from('.flash-card-anim', {
-                scrollTrigger: {
-                    trigger: flashSaleSectionRef.current, // The element to watch
-                    start: 'bottom 35%', // <--- CHANGE THIS
-                    toggleActions: 'play none none none',
-                },
-                y: 60,
-                opacity: 0,
-                duration: 0.8,
-                ease: 'power3.out',
-                stagger: 0.1,
-            });
+                // --- Desktop Specific Animation ---
+                if (isDesktop) {
+                    gsap.from('.flash-card-anim', {
+                        scrollTrigger: {
+                            trigger: flashSaleSectionRef.current, // The element to watch
+                            start: 'bottom 35%', // <--- CHANGE THIS
+                            toggleActions: 'play none none none',
+                        },
+                        y: 60,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: 'power3.out',
+                        stagger: 0.1,
+                    });
 
-            gsap.from('.flash-button', {
-                scrollTrigger: {
-                    trigger: '.flash-button',
-                    start: 'top 2%',
-                    toggleActions: 'play none none none',
-                },
-                y: 60,
-                opacity: 0,
-                duration: 0.8,
-                ease: 'power3.inOut',
-            });
-        }, flashSaleSectionRef);
+                    gsap.from('.flash-button', {
+                        scrollTrigger: {
+                            trigger: '.flash-button',
+                            start: 'top 2%',
+                            toggleActions: 'play none none none',
+                        },
+                        y: 60,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: 'power3.inOut',
+                    });
+                }
+
+                // --- Mobile Specific Animation ---
+                if (isMobile) {
+                    gsap.from('.flash-card-anim', {
+                        scrollTrigger: {
+                            trigger: flashSaleSectionRef.current, // The element to watch
+                            start: 'bottom 85%', // <--- CHANGE THIS
+                            toggleActions: 'play none none none',
+                        },
+                        y: 60,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: 'power3.out',
+                        stagger: 0.1,
+                    });
+
+                    gsap.from('.flash-button', {
+                        scrollTrigger: {
+                            trigger: '.flash-button',
+                            start: 'top 85%',
+                            toggleActions: 'play none none none',
+                        },
+                        y: 60,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: 'power3.inOut',
+                    });
+                }
+            },
+        );
 
         /* GSAP Position Parameters Cheat Sheet:
         --------------------------------------
@@ -117,7 +159,7 @@ export const FlashSale = ({
         '<'0.5 : Start 0.5s AFTER the PREVIOUS animation started.
         */
 
-        return () => ctx.revert();
+        return () => mm.revert(); // Clean up everything!
     }, [flashSaleProducts]);
 
     return (

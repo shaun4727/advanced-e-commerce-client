@@ -89,45 +89,64 @@ export default function FooterSection() {
     }, []);
 
     useLayoutEffect(() => {
-        let ctx = gsap.context(() => {
-            // Create a timeline that triggers when the footer section hits the viewport
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: footerSectionRef.current,
-                    start: 'top 0%', // Trigger when the top of the footer is 80% down the screen
-                    toggleActions: 'play none none none',
-                },
-            });
+        const mm = gsap.matchMedia();
 
-            // 1. Reveal the Main Footer sections first
-            tl.from('.footer-section', {
-                y: 50,
-                opacity: 0,
-                duration: 0.8,
-                stagger: 0.2,
-                delay: 0.4,
-                ease: 'power3.out',
-            })
-                // 2. Reveal the Newsletter section AFTER the footer starts appearing
-                .fromTo(
-                    '.newsletter-section',
-                    {
-                        height: 0, // Starts collapsed
-                        opacity: 0,
-                        y: -30,
-                    },
-                    {
-                        height: 'auto', // Expands and pushes the footer down
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.8,
-                        ease: 'expo.out',
-                    },
-                    '>0.2', // Start this slightly before the footer finish for smoothness
-                );
-        }, footerSectionRef);
+        mm.add(
+            {
+                // Define your breakpoints
+                isDesktop: '(min-width: 768px)',
+                isMobile: '(max-width: 767px)',
+            },
+            (context) => {
+                const { isDesktop, isMobile } = context.conditions || {};
 
-        return () => ctx.revert();
+                // Common Header Animation (Works on both, but we can tweak values)
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: footerSectionRef.current,
+                        // Desktop starts at 10%, Mobile triggers earlier at 85% down the screen
+                        start: isDesktop ? 'top 0%' : 'top 75%',
+                        once: true,
+                    },
+                });
+
+                // 1. Reveal the Main Footer sections first
+                tl.from('.footer-section', {
+                    y: 50,
+                    opacity: 0,
+                    duration: 0.8,
+                    stagger: 0.2,
+                    delay: 0.4,
+                    ease: 'power3.out',
+                })
+                    // 2. Reveal the Newsletter section AFTER the footer starts appearing
+                    .fromTo(
+                        '.newsletter-section',
+                        {
+                            height: 0, // Starts collapsed
+                            opacity: 0,
+                            y: -30,
+                        },
+                        {
+                            height: 'auto', // Expands and pushes the footer down
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.8,
+                            ease: 'expo.out',
+                        },
+                        '>0.2', // Start this slightly before the footer finish for smoothness
+                    );
+            },
+        );
+        /* GSAP Position Parameters Cheat Sheet:
+        --------------------------------------
+        '<'  : Start at the SAME TIME as the PREVIOUS animation starts.
+        '>'  : Start at the EXACT MOMENT the PREVIOUS animation ends (Default).
+        '+=' : Start with a GAP after the previous animation ends (e.g., '+=0.5').
+        '-=' : Start BEFORE the previous animation ends (Overlap) (e.g., '-=0.2').
+        '<'0.5 : Start 0.5s AFTER the PREVIOUS animation started.
+        */
+        return () => mm.revert(); // Clean up everything!
     }, []);
     return (
         <footer className=" text-gray-300" ref={footerSectionRef}>

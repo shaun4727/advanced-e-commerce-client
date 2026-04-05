@@ -53,55 +53,86 @@ export const TopBrandsComponent = ({ allBrands }: { allBrands: IBrand[] }) => {
     useLayoutEffect(() => {
         if (!allBrands || allBrands.length === 0) return;
 
-        let ctx = gsap.context(() => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: topBrandSectionRef.current,
-                    start: 'bottom 40%', // Triggers when the section is visible
-                    toggleActions: 'play none none none',
-                },
-            });
+        const mm = gsap.matchMedia();
 
-            // Header Reveal
-            tl.fromTo(
-                '.brand-bar-revealer-1',
-                { scaleX: 1, transformOrigin: 'right' },
-                { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
-            )
-                .fromTo(
-                    '.brand-text-revealer-1',
-                    { x: 10, opacity: 0 },
-                    { x: 0, opacity: 1, duration: 0.5 },
-                    '<0.4',
-                )
-                .fromTo(
-                    '.brand-bar-revealer-2',
+        mm.add(
+            {
+                // Define your breakpoints
+                isDesktop: '(min-width: 768px)',
+                isMobile: '(max-width: 767px)',
+            },
+            (context) => {
+                const { isDesktop, isMobile } = context.conditions || {};
+
+                // Common Header Animation (Works on both, but we can tweak values)
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: topBrandSectionRef.current,
+                        start: isDesktop ? 'bottom 40%' : 'top 55%',
+                        toggleActions: 'play none none none',
+                    },
+                });
+
+                // Header Reveal
+                tl.fromTo(
+                    '.brand-bar-revealer-1',
                     { scaleX: 1, transformOrigin: 'right' },
                     { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
-                    '-=0.3', // Overlap with previous
                 )
-                .fromTo(
-                    '.brand-text-revealer-2',
-                    { x: 10, opacity: 0 },
-                    { x: 0, opacity: 1, duration: 0.5 },
-                    '<0.4',
-                );
-            // Integrated Card Animation (Smoother than separate triggers)
-            gsap.from('.brand-card-anim', {
-                scrollTrigger: {
-                    trigger: topBrandSectionRef.current, // The element to watch
-                    start: 'bottom 5%', // <--- CHANGE THIS
-                    toggleActions: 'play none none none',
-                },
-                y: 60,
-                opacity: 0,
-                duration: 0.8,
-                ease: 'power3.out',
-                stagger: 0.1,
-            });
-        }, topBrandSectionRef);
+                    .fromTo(
+                        '.brand-text-revealer-1',
+                        { x: 10, opacity: 0 },
+                        { x: 0, opacity: 1, duration: 0.5 },
+                        '<0.4',
+                    )
+                    .fromTo(
+                        '.brand-bar-revealer-2',
+                        { scaleX: 1, transformOrigin: 'right' },
+                        { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
+                        '-=0.3', // Overlap with previous
+                    )
+                    .fromTo(
+                        '.brand-text-revealer-2',
+                        { x: 10, opacity: 0 },
+                        { x: 0, opacity: 1, duration: 0.5 },
+                        '<0.4',
+                    );
 
-        return () => ctx.revert();
+                // --- Desktop Specific Animation ---
+                if (isDesktop) {
+                    gsap.from('.brand-card-anim', {
+                        scrollTrigger: {
+                            trigger: topBrandSectionRef.current, // The element to watch
+                            start: 'bottom 5%', // <--- CHANGE THIS
+                            toggleActions: 'play none none none',
+                        },
+                        y: 60,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: 'power3.out',
+                        stagger: 0.1,
+                    });
+                }
+
+                // --- Mobile Specific Animation ---
+                if (isMobile) {
+                    gsap.from('.brand-card-anim', {
+                        scrollTrigger: {
+                            trigger: topBrandSectionRef.current, // The element to watch
+                            start: 'top 65%', // <--- CHANGE THIS
+                            toggleActions: 'play none none none',
+                        },
+                        y: 60,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: 'power3.out',
+                        stagger: 0.1,
+                    });
+                }
+            },
+        );
+
+        return () => mm.revert(); // Clean up everything!
     }, [allBrands]);
 
     /* GSAP Position Parameters Cheat Sheet:

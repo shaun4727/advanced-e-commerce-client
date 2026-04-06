@@ -199,49 +199,58 @@ export default function ProductDetail({ product }: { product: IProduct }) {
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: productSectionRef.current,
-                    start: 'top 50%', // Triggers when the section is visible
+                    // 'top bottom' means: start when the TOP of the section
+                    // enters the BOTTOM of the viewport.
+                    // This is the most reliable "entry" trigger.
+                    start: 'top bottom+=100',
                     toggleActions: 'play none none none',
                 },
+                // Add a tiny delay so the animation doesn't start
+                // before the fonts/images are fully positioned
+                delay: 0.1,
             });
 
-            // Header Reveal
             tl.from('.download-emart-app', {
                 opacity: 0,
                 y: 30,
-                duration: 0.8,
-                ease: 'power3.in',
+                duration: 0.6,
+                ease: 'power2.out',
             })
                 .from(
                     '.newsletter-card',
                     {
                         opacity: 0,
                         y: 30,
-                        duration: 0.8,
-                        ease: 'power3.in',
+                        duration: 0.6,
+                        ease: 'power2.out',
                     },
-                    '-=0.2',
+                    '-=0.4',
                 )
                 .fromTo(
                     '.product-name-text-revealer',
                     { scaleX: 1, transformOrigin: 'right' },
                     { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
-                    '-=0.1', // Overlap with previous
+                    '-=0.2',
                 )
                 .fromTo(
                     '.description-text-revealer',
                     { scaleX: 1, transformOrigin: 'right' },
                     { scaleX: 0, duration: 0.5, ease: 'power2.inOut' },
-                    '-=0.1', // Overlap with previous
+                    '-=0.3',
                 )
-                .from('.add-to-cart-section', {
-                    opacity: 0,
-                    y: -30,
-                    duration: 0.5,
-                    ease: 'expo.inOut',
-                });
-
-            return () => ctx.revert();
+                .from(
+                    '.add-to-cart-section',
+                    {
+                        opacity: 0,
+                        y: 20,
+                        duration: 0.5,
+                        ease: 'power2.out',
+                    },
+                    '-=0.2',
+                );
         }, productSectionRef);
+
+        return () => ctx.revert();
     }, [product]);
 
     const getSimilarProducts = async () => {

@@ -85,7 +85,16 @@ export default function FooterSection() {
     const footerSectionRef = useRef(null);
 
     useEffect(() => {
+        // 1. Initial refresh
         ScrollTrigger.refresh();
+
+        // 2. Refresh after a short delay to account for
+        // Next.js hydration and image rendering
+        const timer = setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 500);
+
+        return () => clearTimeout(timer);
     }, []);
 
     useLayoutEffect(() => {
@@ -105,7 +114,7 @@ export default function FooterSection() {
                     scrollTrigger: {
                         trigger: footerSectionRef.current,
                         // Desktop starts at 10%, Mobile triggers earlier at 85% down the screen
-                        start: isDesktop ? 'top 0%' : 'top 75%',
+                        start: isDesktop ? 'top bottom-=50' : 'top 75%',
                         once: true,
                     },
                 });
@@ -148,6 +157,7 @@ export default function FooterSection() {
         */
         return () => mm.revert(); // Clean up everything!
     }, []);
+
     return (
         <footer className=" text-gray-300" ref={footerSectionRef}>
             {/* Newsletter Section */}

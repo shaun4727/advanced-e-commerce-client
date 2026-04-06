@@ -71,7 +71,7 @@ export const FlashSale = ({
                     scrollTrigger: {
                         trigger: flashSaleSectionRef.current,
                         // Desktop starts at 10%, Mobile triggers earlier at 85% down the screen
-                        start: isDesktop ? 'top 10%' : 'top 75%',
+                        start: isDesktop ? 'top 53%' : 'top 75%',
                         toggleActions: 'play none none none', // Play once on entry
                     },
                 });
@@ -97,7 +97,7 @@ export const FlashSale = ({
                     gsap.from('.flash-card-anim', {
                         scrollTrigger: {
                             trigger: flashSaleSectionRef.current, // The element to watch
-                            start: 'bottom 35%', // <--- CHANGE THIS
+                            start: 'bottom 75%', // <--- CHANGE THIS
                             toggleActions: 'play none none none',
                         },
                         y: 60,
@@ -110,7 +110,7 @@ export const FlashSale = ({
                     gsap.from('.flash-button', {
                         scrollTrigger: {
                             trigger: '.flash-button',
-                            start: 'top 2%',
+                            start: 'top 42%',
                             toggleActions: 'play none none none',
                         },
                         y: 60,

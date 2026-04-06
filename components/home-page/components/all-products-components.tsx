@@ -130,52 +130,74 @@ export default function AllProductsSection({
     useLayoutEffect(() => {
         if (!products || products.length === 0) return;
 
-        let ctx = gsap.context(() => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: allProductSectionRef.current,
-                    start: 'top 50%', // Triggers when the section is visible
-                    toggleActions: 'play none none none',
-                },
-            });
+        const mm = gsap.matchMedia();
 
-            // Header Reveal
-            tl.from('.big-sale-section', {
-                opacity: 0,
-                y: 30,
-                duration: 0.8,
-                ease: 'power3.in',
-            })
-                .from(
-                    '.all-products-filter-section',
-                    {
-                        opacity: 0,
-                        x: -30,
-                        duration: 0.8,
-                        ease: 'power3.inOut',
+        mm.add(
+            {
+                // Define your breakpoints
+                isDesktop: '(min-width: 768px)',
+                isMobile: '(max-width: 767px)',
+            },
+            (context) => {
+                const { isDesktop, isMobile } = context.conditions || {};
+
+                // Common Header Animation (Works on both, but we can tweak values)
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: allProductSectionRef.current,
+                        // Desktop starts at 50%, Mobile triggers earlier at 85% down the screen
+                        start: isDesktop ? 'top 50%' : 'top 75%',
+                        toggleActions: 'play none none none', // Play once on entry
                     },
-                    '-=0.4',
-                )
-                .from(
-                    '.grid-list-section',
-                    {
-                        opacity: 0,
-                        y: -30,
-                        duration: 0.8,
-                        ease: 'expo.out',
-                    },
-                    '-=0.1',
-                )
-                .from('.product-card-anim', {
-                    y: 30,
-                    opacity: 0,
-                    duration: 0.8,
-                    ease: 'power3.inOut',
-                    stagger: 0.3,
                 });
 
-            return () => ctx.revert();
-        }, allProductSectionRef);
+                // Header Reveal
+                tl.from('.big-sale-section', {
+                    opacity: 0,
+                    y: 30,
+                    duration: 0.8,
+                    ease: 'power3.in',
+                })
+                    .from(
+                        '.all-products-filter-section',
+                        {
+                            opacity: 0,
+                            x: -30,
+                            duration: 0.8,
+                            ease: 'power3.inOut',
+                        },
+                        '-=0.4',
+                    )
+                    .from(
+                        '.grid-list-section',
+                        {
+                            opacity: 0,
+                            y: -30,
+                            duration: 0.8,
+                            ease: 'expo.out',
+                        },
+                        '-=0.1',
+                    )
+                    .from('.product-card-anim', {
+                        y: 30,
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: 'power3.inOut',
+                        stagger: 0.3,
+                    });
+            },
+        );
+
+        /* GSAP Position Parameters Cheat Sheet:
+        --------------------------------------
+        '<'  : Start at the SAME TIME as the PREVIOUS animation starts.
+        '>'  : Start at the EXACT MOMENT the PREVIOUS animation ends (Default).
+        '+=' : Start with a GAP after the previous animation ends (e.g., '+=0.5').
+        '-=' : Start BEFORE the previous animation ends (Overlap) (e.g., '-=0.2').
+        '<'0.5 : Start 0.5s AFTER the PREVIOUS animation started.
+        */
+
+        return () => mm.revert(); // Clean up everything!
     }, [products]);
 
     // const clearAllFilters = () => {

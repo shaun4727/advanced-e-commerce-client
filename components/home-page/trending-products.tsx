@@ -71,7 +71,7 @@ export const TrendingProducts = ({
                     scrollTrigger: {
                         trigger: trendingSection.current,
                         // Desktop starts at 10%, Mobile triggers earlier at 85% down the screen
-                        start: isDesktop ? 'top 10%' : 'top 75%',
+                        start: isDesktop ? 'top 5%' : 'top 75%',
                         once: true,
                     },
                 });
@@ -87,7 +87,7 @@ export const TrendingProducts = ({
                     gsap.from('.trending-card-anim', {
                         scrollTrigger: {
                             trigger: trendingCardContainerRef.current,
-                            start: 'top 2%',
+                            start: 'top 7%',
                         },
                         x: 100, // Slide in from the right on desktop
                         opacity: 0,

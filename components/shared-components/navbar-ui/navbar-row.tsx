@@ -94,11 +94,13 @@ export function NavigationRow({ menu }: { menu: navItem[] }) {
     };
 
     const handleNavigation = (item: navItem) => {
-        console.log(item);
         if (item.data.title === 'Home') {
             router.push('/');
         } else {
-            router.push(`/products?category=${item._id}`);
+            const catId = item.data.category.length
+                ? item.data.category[0]._id
+                : '';
+            router.push(`/products?category=${catId}`);
         }
     };
 

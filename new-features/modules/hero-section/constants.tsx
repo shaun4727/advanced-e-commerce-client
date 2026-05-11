@@ -22,9 +22,17 @@ export const heroSlides = [
         buttonText: 'SHOP NOW',
         buttonLink: '/products',
     },
-
     {
         id: 2,
+        topText: 'APPLE',
+        title: 'ELECTRONIC DEVICE',
+        subtitle: 'Sleek and powerful smartphone with advanced camera.',
+        image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9',
+        buttonText: 'SHOP NOW',
+        buttonLink: '/products',
+    },
+    {
+        id: 3,
         topText: 'NIKE',
         title: 'SUMMER SPECIALS',
         subtitle: 'Comfortable and stylish running shoes.',

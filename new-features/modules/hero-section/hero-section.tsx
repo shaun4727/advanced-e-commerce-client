@@ -1,0 +1,137 @@
+'use client';
+
+import { heroSlides } from '@/components/home-page/constants';
+import { Button } from '@/components/ui/button';
+import { useUser } from '@/context/UserContext';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+
+export const HeroSection = () => {
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    const { setIsLoading } = useUser();
+
+    const heroSection = useRef(null);
+
+    useGSAP(
+        () => {
+            // We target navSection.current directly to avoid scope issues
+            gsap.fromTo(
+                heroSection.current,
+                {
+                    y: 30, // Start slightly above
+                    opacity: 0,
+                    autoAlpha: 0, // GSAP helper: sets visibility:hidden and opacity:0
+                },
+                {
+                    y: 0,
+                    opacity: 1,
+                    autoAlpha: 1, // Sets visibility:visible and opacity:1
+                    duration: 0.8,
+                    delay: 0.4,
+                    ease: 'power3.out',
+                },
+            );
+        },
+        { scope: heroSection },
+    );
+
+    const nextSlide = () => {
+        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    };
+
+    const prevSlide = () => {
+        setCurrentSlide(
+            (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
+        );
+    };
+
+    useEffect(() => {
+        setIsLoading(true);
+    }, []);
+
+    const currentHero = heroSlides[currentSlide];
+    return (
+        <div className="w-full z-10 opacity-0" ref={heroSection}>
+            <div className="h-135 elative w-full bg-black/40 ">
+                <div className="absolute inset-0">
+                    <Image
+                        src={currentHero?.image || '/placeholder.svg'}
+                        alt={currentHero.title}
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    {/* Content */}
+                    <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
+                        <div className="max-w-2xl text-white">
+                            {/* Top Text */}
+                            <p className="text-sm md:text-base font-medium tracking-wider mb-2 opacity-90">
+                                {currentHero.topText}
+                            </p>
+
+                            {/* Main Title */}
+                            <h1 className="text-4xl md:text-6xl lg:text-4xl font-bold mb-4 leading-tight">
+                                {currentHero.title}
+                            </h1>
+
+                            {/* Subtitle */}
+                            <p className="text-lg md:text-xl mb-8 opacity-90 max-w-lg">
+                                {currentHero.subtitle}
+                            </p>
+
+                            {/* CTA Button */}
+                            <Link href="/products">
+                                <Button
+                                    size="lg"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-md font-semibold rounded-md transition-colors duration-200"
+                                >
+                                    {currentHero.buttonText}
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Navigation Arrows */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 text-white rounded-full h-12 w-12"
+                        onClick={prevSlide}
+                    >
+                        <ChevronLeft className="h-6 w-6" />
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 text-white rounded-full h-12 w-12"
+                        onClick={nextSlide}
+                    >
+                        <ChevronRight className="h-6 w-6" />
+                    </Button>
+
+                    {/* Slide Indicators */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+                        {heroSlides.map((_, index) => (
+                            <button
+                                key={index}
+                                className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+                                    index === currentSlide
+                                        ? 'bg-white'
+                                        : 'bg-white/50'
+                                }`}
+                                onClick={() => setCurrentSlide(index)}
+                            />
+                        ))}
+                    </div>
+                    {/* Benefits Section */}
+                </div>
+            </div>
+        </div>
+    );
+};

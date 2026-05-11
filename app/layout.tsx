@@ -1,6 +1,6 @@
 import Providers from '@/providers/Providers';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Smooch_Sans } from 'next/font/google';
 import { Toaster } from 'sonner';
 import './globals.css';
 
@@ -11,6 +11,10 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
     variable: '--font-geist-mono',
+    subsets: ['latin'],
+});
+const smoochSans = Smooch_Sans({
+    variable: '--font-smooch',
     subsets: ['latin'],
 });
 
@@ -27,7 +31,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} antialiased`}
             >
                 <Toaster richColors position="top-center" />
                 <Providers>{children}</Providers>

@@ -52,7 +52,7 @@ export default function MainNavbar() {
                     href="/"
                     className="text-2xl font-black tracking-tighter text-foreground uppercase"
                 >
-                    Truewerk
+                    EMART
                 </Link>
 
                 {/* Navigation Items */}

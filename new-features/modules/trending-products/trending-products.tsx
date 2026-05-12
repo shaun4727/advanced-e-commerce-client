@@ -74,7 +74,7 @@ export const TrendingProducts = () => {
             <div className="flex items-center space-x-4 mx-4">
                 <div className="flex items-center space-x-3">
                     <div className="relative">
-                        <h2 className="text-2xl uppercase font-bold text-gray-900 flash-text-revealer">
+                        <h2 className="text-[4vw] font-smooch uppercase font-bold text-gray-900 flash-text-revealer">
                             Trending Products
                         </h2>
                     </div>

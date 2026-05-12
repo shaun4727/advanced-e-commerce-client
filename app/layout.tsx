@@ -1,6 +1,11 @@
 import Providers from '@/providers/Providers';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Smooch_Sans } from 'next/font/google';
+import {
+    Geist,
+    Geist_Mono,
+    Roboto_Condensed,
+    Smooch_Sans,
+} from 'next/font/google';
 import { Toaster } from 'sonner';
 import './globals.css';
 
@@ -17,6 +22,10 @@ const smoochSans = Smooch_Sans({
     variable: '--font-smooch',
     subsets: ['latin'],
 });
+const robotoC = Roboto_Condensed({
+    variable: '--font-roboto-con',
+    subsets: ['latin'],
+});
 
 export const metadata: Metadata = {
     title: 'EMart',
@@ -31,7 +40,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body
-                className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} ${robotoC.variable} antialiased`}
             >
                 <Toaster richColors position="top-center" />
                 <Providers>{children}</Providers>

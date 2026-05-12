@@ -79,7 +79,7 @@ export const FlashSale = () => {
                         <Zap className="h-5 w-5 text-white" />
                     </div>
                     <div className="relative">
-                        <h2 className="text-2xl uppercase font-bold text-gray-900 flash-text-revealer">
+                        <h2 className="text-[4vw] font-smooch uppercase font-bold text-gray-900 flash-text-revealer">
                             Flash Sale
                         </h2>
                     </div>

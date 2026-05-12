@@ -1,3 +1,4 @@
+import FooterSection from '@/new-features/shared/footer/footer-section';
 import MainNavbar from '@/new-features/shared/header/navbar';
 
 const CommonNewLayout = ({ children }: { children: React.ReactNode }) => {
@@ -5,6 +6,7 @@ const CommonNewLayout = ({ children }: { children: React.ReactNode }) => {
         <div>
             <MainNavbar />
             {children}
+            <FooterSection />
         </div>
     );
 };

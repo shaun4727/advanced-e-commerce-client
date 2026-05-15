@@ -313,7 +313,7 @@ export default function ProductDetailFeature({
                                     </Card>
                                 </TabsContent>
                                 <TabsContent value="reviews" className="mt-6">
-                                    <Card>
+                                    <Card className="rounded-none">
                                         <CardContent className="p-6">
                                             <h3 className="font-semibold text-gray-900 mb-4">
                                                 Customer Reviews
@@ -354,7 +354,7 @@ export default function ProductDetailFeature({
                                     </Card>
                                 </TabsContent>
                                 <TabsContent value="shipping" className="mt-6">
-                                    <Card>
+                                    <Card className="rounded-none">
                                         <CardContent className="p-6">
                                             <h3 className="font-semibold text-gray-900 mb-4">
                                                 Shipping Information

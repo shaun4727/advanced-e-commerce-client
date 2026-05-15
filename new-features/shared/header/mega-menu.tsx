@@ -11,9 +11,10 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { navItem } from '@/types/new-navItems';
 import Image from 'next/image';
 
-export function MegaNavigationMenu() {
+export function MegaNavigationMenu({ megaMenu }: { megaMenu: navItem }) {
     return (
         <NavigationMenu className="static">
             <NavigationMenuList className="static">
@@ -24,64 +25,25 @@ export function MegaNavigationMenu() {
                     <NavigationMenuContent>
                         <div className="flex justify-between gap-8 p-10 md:min-w-screen md:min-h-[350px] text-xs uppercase">
                             <div className="flex gap-8">
-                                <div>
-                                    <ul>
-                                        <li>
-                                            <h1 className="font-extrabold text-lg mb-4">
-                                                Home Accessories
-                                            </h1>
-                                        </li>
-                                        <li className="mb-1">Bedding</li>
-                                        <li className="mb-1">Furniture</li>
-                                        <li className="mb-1">Wall Art</li>
-                                        <li className="mb-1">
-                                            Lighting & Ceiling Fans
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <ul>
-                                        <li>
-                                            <h1 className="font-extrabold text-lg mb-4">
-                                                Computer
-                                            </h1>
-                                        </li>
-                                        <li className="mb-1">
-                                            Computer Accessories
-                                        </li>
-                                        <li className="mb-1">Monitors</li>
-                                        <li className="mb-1">Components</li>
-                                        <li className="mb-1">Laptops</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <ul>
-                                        <li>
-                                            <h1 className="font-extrabold text-lg mb-4">
-                                                Mobile Accessories
-                                            </h1>
-                                        </li>
-                                        <li className="mb-1">Headphones</li>
-                                        <li className="mb-1">Cell Phones</li>
-                                        <li className="mb-1">Tablets</li>
-                                        <li className="mb-1">
-                                            Accessories & Supplies
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <ul>
-                                        <li>
-                                            <h1 className="font-extrabold text-lg mb-4">
-                                                Bags & Others
-                                            </h1>
-                                        </li>
-                                        <li className="mb-1">Backpacks</li>
-                                        <li className="mb-1">Suitcases</li>
-                                        <li className="mb-1">Travel Totes</li>
-                                        <li className="mb-1">Carry Ons</li>
-                                    </ul>
-                                </div>
+                                {megaMenu.children &&
+                                    megaMenu.children.map((nav) => (
+                                        <div>
+                                            <ul>
+                                                <li>
+                                                    <h1 className="font-extrabold text-lg mb-4">
+                                                        {nav.data.title}
+                                                    </h1>
+                                                </li>
+                                                {nav.data.category?.map(
+                                                    (subNav) => (
+                                                        <li className="mb-1">
+                                                            {subNav.name}
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ul>
+                                        </div>
+                                    ))}
                             </div>
                             <div>
                                 <Image

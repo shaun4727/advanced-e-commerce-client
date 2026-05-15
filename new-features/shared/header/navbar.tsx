@@ -2,26 +2,25 @@
 
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { Search, ShoppingCart, UserCircle, X } from 'lucide-react';
+import { Search, ShoppingCart, UserCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useUser } from '@/context/UserContext';
 import { CartDrawer } from '@/new-features/modules/checkout-feature/cart';
+import { getNavigationMenuApi } from '@/services/NavmenuService';
+import { navItem } from '@/types/new-navItems';
+import { toast } from 'sonner';
+import { SearchOverlayContent } from './components/search-overlay-content';
 import { MegaNavigationMenu } from './mega-menu';
+import { MobileMenu } from './mobile-menu';
 
 export default function MainNavbar() {
     const headerRef = useRef(null);
+    const [navigationMenu, setNavigationMenu] = useState<navItem[]>([]);
+    const { setIsLoading } = useUser();
 
     useGSAP(
         () => {
@@ -35,6 +34,36 @@ export default function MainNavbar() {
         },
         { scope: headerRef },
     );
+
+    useEffect(() => {
+        const getNavigationMenuMethod = async () => {
+            try {
+                const res = await getNavigationMenuApi();
+
+                if (res.success) {
+                    setNavigationMenu(res.data?.[0]?.items);
+                } else {
+                    toast.error(res?.message);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        setIsLoading(true);
+        getNavigationMenuMethod();
+    }, []);
+
+    const handleNavigation = (item: navItem) => {
+        if (item.data.title === 'Home') {
+            return '/';
+        } else {
+            const catId = item.data.category.length
+                ? item.data.category[0]._id
+                : '';
+
+            return `/products?category=${catId}`;
+        }
+    };
 
     return (
         <header
@@ -55,27 +84,22 @@ export default function MainNavbar() {
                     EMART
                 </Link>
 
-                {/* Navigation Items */}
+                {/*Larger Screen Navigation Items */}
                 <div className="hidden lg:flex items-center gap-8">
-                    <Link
-                        href="/"
-                        className="nav-link text-xs font-bold uppercase tracking-tight hover:text-primary"
-                    >
-                        Home
-                    </Link>
-                    <MegaNavigationMenu />
-                    <Link
-                        href="/fruits"
-                        className="nav-link text-xs font-bold uppercase tracking-tight hover:text-primary"
-                    >
-                        Fruits & Vegetables
-                    </Link>
-                    <Link
-                        href="/watches"
-                        className="nav-link text-xs font-bold uppercase tracking-tight hover:text-primary"
-                    >
-                        Watches
-                    </Link>
+                    {navigationMenu.map((navItem) => {
+                        if (!navItem.children.length) {
+                            return (
+                                <Link
+                                    href={handleNavigation(navItem)}
+                                    className="nav-link text-xs font-bold uppercase tracking-tight hover:text-primary"
+                                >
+                                    {navItem.data.title}
+                                </Link>
+                            );
+                        } else {
+                            return <MegaNavigationMenu megaMenu={navItem} />;
+                        }
+                    })}
                 </div>
 
                 {/* Action Icons */}
@@ -121,57 +145,12 @@ export default function MainNavbar() {
                             </span>
                         </Button>
                     </CartDrawer>
+
+                    <div className="md:hidden">
+                        <MobileMenu navigationMenu={navigationMenu} />
+                    </div>
                 </div>
             </nav>
         </header>
-    );
-}
-
-function SearchOverlayContent() {
-    return (
-        <div className="flex flex-col h-full py-6">
-            <SheetHeader className="mb-8">
-                <div className="flex items-center justify-between">
-                    {/* FIX: "aa" must be inside SheetTitle for accessibility. 
-             If you want it hidden, use the VisuallyHidden component.
-          */}
-                    <SheetTitle className="text-4xl font-bold tracking-tighter">
-                        aa
-                    </SheetTitle>
-
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="link"
-                            className="uppercase text-xs font-bold tracking-widest text-muted-foreground"
-                        >
-                            Clear
-                        </Button>
-                        <SheetClose className="p-2 hover:bg-accent rounded-full transition-colors">
-                            <X className="size-6" />
-                        </SheetClose>
-                    </div>
-                </div>
-
-                {/* FIX: Description is also required for full accessibility */}
-                <SheetDescription className="sr-only">
-                    Search our product catalog for electronics, watches, and
-                    more.
-                </SheetDescription>
-            </SheetHeader>
-
-            <div className="relative border-b border-foreground">
-                <Input
-                    className="border-none bg-transparent px-0 py-8 text-2xl focus-visible:ring-0 placeholder:text-muted-foreground/30"
-                    placeholder="Search items..."
-                    autoFocus
-                />
-            </div>
-
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
-                <p className="text-lg font-medium opacity-60 italic">
-                    No Results Could Be Found.
-                </p>
-            </div>
-        </div>
     );
 }

@@ -1,9 +1,11 @@
 'use client';
 
+import { getAllBrands } from '@/services/Brand';
+import { IBrand } from '@/types';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Register the ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -57,6 +59,19 @@ export default function TopBrands() {
     // 1. ADDED TYPES HERE: <HTMLElement> and <HTMLDivElement>
     const sectionRef = useRef<HTMLElement>(null);
     const sliderRef = useRef<HTMLDivElement>(null);
+    const [topBrands, setTopBrands] = useState<IBrand[]>([]);
+
+    useEffect(() => {
+        const getTopBrands = async () => {
+            try {
+                const { data: allBrands } = await getAllBrands();
+                setTopBrands(allBrands);
+            } catch (err) {
+                console.log('brands not fetched');
+            }
+        };
+        getTopBrands();
+    }, []);
 
     useEffect(() => {
         const section = sectionRef.current;
@@ -137,32 +152,34 @@ export default function TopBrands() {
                     className="flex overflow-x-auto gap-6 snap-x snap-mandatory no-scrollbar"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
-                    {brandsData.map((brand, index) => (
-                        <div
-                            key={index}
-                            className="shrink-0 w-full sm:w-[calc(50%-12px)] md:w-[calc(33.33%-16px)] lg:w-[calc(20%-19.2px)] snap-start flex flex-col items-center p-6 border border-slate-200 bg-card text-card-foreground shadow-sm rounded-none hover:shadow-md transition-shadow"
-                        >
-                            <div className="h-20 w-full flex items-center justify-center mb-6">
-                                <img
-                                    src={brand.logo}
-                                    alt={`${brand.name} logo`}
-                                    className="max-h-12 max-w-[120px] object-contain opacity-80"
-                                />
-                            </div>
-                            <h3 className="text-lg font-bold text-slate-900 mb-2">
-                                {brand.name}
-                            </h3>
-                            <p className="text-xs text-slate-500 text-center mb-4">
-                                {brand.description}
-                            </p>
-                            <a
-                                href="#"
-                                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                    {topBrands
+                        ?.slice(0, 6)
+                        .map((brand: IBrand, index: number) => (
+                            <div
+                                key={index}
+                                className="shrink-0 w-full sm:w-[calc(50%-12px)] md:w-[calc(33.33%-16px)] lg:w-[calc(20%-19.2px)] snap-start flex flex-col items-center p-6 border border-slate-200 bg-card text-card-foreground shadow-sm rounded-none hover:shadow-md transition-shadow"
                             >
-                                {brand.products}
-                            </a>
-                        </div>
-                    ))}
+                                <div className="h-20 w-full flex items-center justify-center mb-6">
+                                    <img
+                                        src={brand.logo}
+                                        alt={`${brand.name} logo`}
+                                        className="max-h-12 max-w-[120px] object-contain opacity-80"
+                                    />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">
+                                    {brand.name}
+                                </h3>
+                                <p className="text-xs text-slate-500 text-center mb-4">
+                                    A trusted Brand
+                                </p>
+                                <a
+                                    href="#"
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                                >
+                                    100 Products
+                                </a>
+                            </div>
+                        ))}
                 </div>
             </div>
         </section>

@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { IProduct } from '@/types';
 
 // --- Types ---
 export interface Product {
@@ -23,7 +23,7 @@ export interface Product {
 }
 
 interface ProductSliderProps {
-    products: Product[];
+    products: IProduct[];
     title?: string; // Optional title if needed outside
 }
 
@@ -118,7 +118,7 @@ export function ProductSlider({ products }: ProductSliderProps) {
         >
             {/* Track Container (Height of screen logic applied here) */}
             <div
-                className="relative w-full h-[75vh] md:h-[80vh]"
+                className="relative w-full h-[75vh] md:h-[55vh]"
                 // Attach touch listeners to the wrapper
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
@@ -130,7 +130,7 @@ export function ProductSlider({ products }: ProductSliderProps) {
                 >
                     {products.map((product) => (
                         <div
-                            key={product.id}
+                            key={product._id}
                             // Width dictates items per view (100% on mobile, 50% md, 25% lg)
                             className="relative flex-shrink-0 w-full md:w-1/2 lg:w-1/4 h-full px-2 lg:px-4 group"
                         >
@@ -138,7 +138,7 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                 {/* Image & Quick Add Area */}
                                 <div className="relative flex-1 bg-[#F9F8F6] overflow-hidden mb-4 flex items-center justify-center pointer-events-none md:pointer-events-auto">
                                     <Image
-                                        src={product.image}
+                                        src={product.imageUrls?.[0]}
                                         alt={product.name}
                                         fill
                                         className="object-cover object-center mix-blend-multiply p-6"
@@ -158,35 +158,19 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                 {/* Product Details Area */}
                                 <div className="space-y-2.5 pointer-events-none md:pointer-events-auto">
                                     {/* Swatches */}
-                                    <div className="flex items-center gap-1.5 pointer-events-auto">
-                                        {product.colors.map((color, idx) => (
-                                            <div
-                                                key={idx}
-                                                className={cn(
-                                                    'size-4 rounded-sm border border-gray-300',
-                                                    idx === 0 &&
-                                                        'ring-1 ring-black ring-offset-2', // First item selected state mockup
-                                                )}
-                                                style={{
-                                                    backgroundColor: color,
-                                                }}
-                                            />
-                                        ))}
-                                        {product.extraColorsCount && (
-                                            <span className="text-xs text-muted-foreground ml-1">
-                                                +{product.extraColorsCount}
-                                            </span>
-                                        )}
-                                    </div>
 
                                     {/* Tags & Rating */}
                                     <div className="flex items-center justify-between">
                                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                                            {product.tag || ' '}{' '}
+                                            {typeof product.category ===
+                                            'string'
+                                                ? product.category
+                                                : product.category.name ||
+                                                  ' '}{' '}
                                             {/* NBSP to hold height if empty */}
                                         </p>
                                         <div className="flex items-center gap-1 text-[10px] font-bold">
-                                            {product.rating.toFixed(1)}{' '}
+                                            {product.ratingCount.toFixed(1)}{' '}
                                             <Star className="size-3 fill-black text-black" />
                                         </div>
                                     </div>
@@ -200,13 +184,6 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                             ${product.price.toFixed(2)}
                                         </p>
                                     </div>
-
-                                    {/* Promo Banner */}
-                                    {product.promo && (
-                                        <p className="text-xs font-bold text-[#D35400] uppercase tracking-tight">
-                                            {product.promo}
-                                        </p>
-                                    )}
                                 </div>
                             </div>
                         </div>

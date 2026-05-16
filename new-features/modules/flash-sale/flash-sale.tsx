@@ -1,4 +1,5 @@
 import { Product, ProductSlider } from '@/components/ui/core/custom-slider';
+import { getFlashSaleProductsApi } from '@/services/ProductServices';
 import { Zap } from 'lucide-react';
 import { CountdownTimer } from './components/count-down-timer';
 
@@ -70,7 +71,8 @@ const featuredProducts: Product[] = [
     // Add more items here to test the sliding!
 ];
 
-export const FlashSale = () => {
+export const FlashSale = async () => {
+    const { data: flashSaleProducts } = await getFlashSaleProductsApi();
     return (
         <div>
             <div className="flex items-center space-x-4 mx-4">
@@ -88,7 +90,7 @@ export const FlashSale = () => {
                     <CountdownTimer />
                 </div>
             </div>
-            <ProductSlider products={featuredProducts} />
+            <ProductSlider products={flashSaleProducts} />
         </div>
     );
 };

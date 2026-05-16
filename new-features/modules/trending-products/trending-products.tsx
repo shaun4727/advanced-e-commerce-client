@@ -1,4 +1,5 @@
 import { Product, ProductSlider } from '@/components/ui/core/custom-slider';
+import { getTrendingProductsApi } from '@/services/ProductServices';
 
 // Mock data based on your screenshot
 const featuredProducts: Product[] = [
@@ -68,7 +69,8 @@ const featuredProducts: Product[] = [
     // Add more items here to test the sliding!
 ];
 
-export const TrendingProducts = () => {
+export const TrendingProducts = async () => {
+    const { data: trendingProducts } = await getTrendingProductsApi();
     return (
         <div>
             <div className="flex items-center space-x-4 mx-4">
@@ -80,7 +82,7 @@ export const TrendingProducts = () => {
                     </div>
                 </div>
             </div>
-            <ProductSlider products={featuredProducts} />;
+            <ProductSlider products={trendingProducts} />;
         </div>
     );
 };

@@ -27,7 +27,7 @@ export function MegaNavigationMenu({ megaMenu }: { megaMenu: navItem }) {
                             <div className="flex gap-8">
                                 {megaMenu.children &&
                                     megaMenu.children.map((nav) => (
-                                        <div>
+                                        <div key={nav._id}>
                                             <ul>
                                                 <li>
                                                     <h1 className="font-extrabold text-lg mb-4">
@@ -36,7 +36,10 @@ export function MegaNavigationMenu({ megaMenu }: { megaMenu: navItem }) {
                                                 </li>
                                                 {nav.data.category?.map(
                                                     (subNav) => (
-                                                        <li className="mb-1">
+                                                        <li
+                                                            className="mb-1"
+                                                            key={subNav._id}
+                                                        >
                                                             {subNav.name}
                                                         </li>
                                                     ),

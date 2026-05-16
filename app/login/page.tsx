@@ -71,9 +71,9 @@ const page = () => {
 
     return (
         <div className="flex items-center min-h-screen">
-            <Card className="max-w-md flex-1  mx-auto bg-white shadow-sm">
+            <Card className="max-w-md flex-1  mx-auto bg-white shadow-sm rounded-none font-roboto-con">
                 <CardHeader className="pb-4">
-                    <h1 className="text-2xl font-normal text-gray-800 mb-2">
+                    <h1 className="text-2xl uppercase text-[3vw] font-bold font-smooch text-gray-800 mb-2">
                         Sign in
                     </h1>
                     <p className="text-gray-600 text-sm">
@@ -87,21 +87,21 @@ const page = () => {
                         <Button
                             variant="default"
                             onClick={() => setCredentialMethod('user')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 py-3 cursor-pointer"
+                            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center rounded-none justify-center gap-2 py-3 cursor-pointer"
                         >
                             Sign In with User
                         </Button>
                         <Button
                             onClick={() => setCredentialMethod('admin')}
                             variant="default"
-                            className="bg-cyan-400 hover:bg-cyan-500 text-white flex items-center justify-center gap-2 py-3 cursor-pointer"
+                            className="bg-cyan-400 hover:bg-cyan-500 text-white flex items-center justify-center gap-2 py-3 cursor-pointer rounded-none"
                         >
                             Sign In with Admin
                         </Button>
                         <Button
                             onClick={() => setCredentialMethod('agent')}
                             variant="default"
-                            className="bg-[#8E7AFE] hover:bg-[#4D2DFC] text-white flex items-center justify-center gap-2 py-3 cursor-pointer"
+                            className="bg-[#8E7AFE] hover:bg-[#4D2DFC] text-white flex items-center justify-center gap-2 py-3 cursor-pointer rounded-none"
                         >
                             Sign In with Agent
                         </Button>
@@ -178,7 +178,7 @@ const page = () => {
                         <Button
                             //   disabled={reCaptchaStatus ? false : true}
                             style={{ marginTop: '5px' }}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 mt-6 cursor-pointer"
+                            className="w-full rounded-none bg-black/85 hover:bg-black text-white font-medium py-3 mt-6 cursor-pointer"
                             type="submit"
                         >
                             LOGIN

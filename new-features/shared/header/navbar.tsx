@@ -12,6 +12,7 @@ import { useUser } from '@/context/UserContext';
 import { CartDrawer } from '@/new-features/modules/checkout-feature/cart';
 import { getNavigationMenuApi } from '@/services/NavmenuService';
 import { navItem } from '@/types/new-navItems';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { SearchOverlayContent } from './components/search-overlay-content';
 import { MegaNavigationMenu } from './mega-menu';
@@ -21,6 +22,7 @@ export default function MainNavbar() {
     const headerRef = useRef(null);
     const [navigationMenu, setNavigationMenu] = useState<navItem[]>([]);
     const { setIsLoading } = useUser();
+    const router = useRouter();
 
     useGSAP(
         () => {
@@ -90,6 +92,7 @@ export default function MainNavbar() {
                         if (!navItem.children.length) {
                             return (
                                 <Link
+                                    key={navItem._id}
                                     href={handleNavigation(navItem)}
                                     className="nav-link text-xs font-bold uppercase tracking-tight hover:text-primary"
                                 >
@@ -97,26 +100,24 @@ export default function MainNavbar() {
                                 </Link>
                             );
                         } else {
-                            return <MegaNavigationMenu megaMenu={navItem} />;
+                            return (
+                                <MegaNavigationMenu
+                                    key={navItem._id}
+                                    megaMenu={navItem}
+                                />
+                            );
                         }
                     })}
                 </div>
 
                 {/* Action Icons */}
                 <div className="flex items-center gap-4">
-                    <Link
-                        href="/rewards"
-                        className="hidden md:block text-xs font-medium text-muted-foreground hover:text-primary"
-                    >
-                        Rewards
-                    </Link>
-
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="hover:bg-accent transition-colors"
+                                className="cursor-pointer hover:bg-accent transition-colors"
                             >
                                 <Search className="size-5" />
                             </Button>
@@ -129,7 +130,12 @@ export default function MainNavbar() {
                         </SheetContent>
                     </Sheet>
 
-                    <Button variant="ghost" size="icon">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="cursor-pointer"
+                        onClick={() => router.push('/login')}
+                    >
                         <UserCircle className="size-5" />
                     </Button>
 
@@ -137,7 +143,7 @@ export default function MainNavbar() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="relative"
+                            className="relative cursor-pointer"
                         >
                             <ShoppingCart className="size-5" />
                             <span className="absolute top-1 right-1 flex size-3 items-center justify-center rounded-full bg-primary text-[8px] text-white">

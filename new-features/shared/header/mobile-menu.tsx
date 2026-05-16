@@ -50,7 +50,6 @@ const menSubCategories = [
 ];
 
 export function MobileMenu({ navigationMenu }: { navigationMenu: navItem[] }) {
-    console.log(navigationMenu);
     const [isOpen, setIsOpen] = useState(false);
     const [activePanel, setActivePanel] = useState<'main' | 'men'>('main');
     const sliderRef = useRef<HTMLDivElement>(null);

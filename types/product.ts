@@ -44,6 +44,10 @@ export interface IProduct {
     orderQuantity?: number;
 }
 
+export type productsWithId = IProduct & {
+    _id: string;
+};
+
 export interface IStep {
     id: number;
     title: string;

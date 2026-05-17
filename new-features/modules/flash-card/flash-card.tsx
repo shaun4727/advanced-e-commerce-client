@@ -9,6 +9,7 @@ import { useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 // Register ScrollTrigger so GSAP knows how to handle scroll events
 if (typeof window !== 'undefined') {
@@ -56,6 +57,12 @@ const promoData = [
 
 export function PromoCards() {
     const sectionRef = useRef<HTMLElement>(null);
+
+    const router = useRouter();
+
+    const navigateToFilter = () => {
+        router.push(`/filter`);
+    };
 
     useGSAP(
         () => {
@@ -119,6 +126,7 @@ export function PromoCards() {
 
                             {/* Shadcn Button with rounded-none override */}
                             <Button
+                                onClick={navigateToFilter}
                                 className={cn(
                                     'rounded-none font-bold tracking-wider px-6 uppercase flex items-center gap-2 group',
                                     promo.btnColor,

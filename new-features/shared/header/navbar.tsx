@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useUser } from '@/context/UserContext';
 import { CartDrawer } from '@/new-features/modules/checkout-feature/cart';
+import { orderedProductsSelector } from '@/redux/features/cartSlice';
+import { useAppSelector } from '@/redux/hooks';
 import { getNavigationMenuApi } from '@/services/NavmenuService';
 import { navItem } from '@/types/new-navItems';
 import { useRouter } from 'next/navigation';
@@ -23,6 +25,7 @@ export default function MainNavbar() {
     const [navigationMenu, setNavigationMenu] = useState<navItem[]>([]);
     const { setIsLoading } = useUser();
     const router = useRouter();
+    const cartProducts = useAppSelector(orderedProductsSelector);
 
     useGSAP(
         () => {
@@ -147,7 +150,7 @@ export default function MainNavbar() {
                         >
                             <ShoppingCart className="size-5" />
                             <span className="absolute top-1 right-1 flex size-3 items-center justify-center rounded-full bg-primary text-[8px] text-white">
-                                0
+                                {cartProducts.length}
                             </span>
                         </Button>
                     </CartDrawer>

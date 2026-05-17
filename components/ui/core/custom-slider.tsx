@@ -7,7 +7,11 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { addProduct } from '@/redux/features/cartSlice';
+import { useAppDispatch } from '@/redux/hooks';
 import { IProduct } from '@/types';
+import Link from 'next/link';
+import { toast } from 'sonner';
 
 // --- Types ---
 export interface Product {
@@ -24,7 +28,7 @@ export interface Product {
 
 interface ProductSliderProps {
     products: IProduct[];
-    title?: string; // Optional title if needed outside
+    title?: string;
 }
 
 export function ProductSlider({ products }: ProductSliderProps) {
@@ -56,6 +60,16 @@ export function ProductSlider({ products }: ProductSliderProps) {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const dispatch = useAppDispatch();
+    const handleAddProduct = (
+        product: IProduct,
+        e: React.MouseEvent<HTMLButtonElement>,
+    ) => {
+        e.stopPropagation();
+        dispatch(addProduct(product));
+        toast.success('Product added to cart', { id: 1 });
+    };
 
     const maxIndex = Math.max(0, products.length - itemsPerView);
     const progressPercentage =
@@ -146,12 +160,23 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                     />
                                     {/* Quick Add Button (Visible on Hover) */}
                                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 pointer-events-auto">
-                                        <Button
-                                            variant="secondary"
-                                            className="bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
-                                        >
-                                            + Quick Add
-                                        </Button>
+                                        <div className="flex flex-col gap-2">
+                                            <Button
+                                                onClick={(e) =>
+                                                    handleAddProduct(product, e)
+                                                }
+                                                variant="secondary"
+                                                className="bg-white cursor-pointer text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
+                                            >
+                                                + Quick Add
+                                            </Button>
+                                            <Link
+                                                href={`/products/${product._id}`}
+                                                className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200 h-9 px-4 py-2 transition-colors"
+                                            >
+                                                View Detail
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
 

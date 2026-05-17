@@ -1,19 +1,39 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import TablePagination from '@/components/ui/core/EPTable/TablePagination';
 import { homePageBrandWithProduct } from '@/services/Brand';
-import { IBrandWithProducts } from '@/types';
+import { IBrandWithProducts, IMeta, productsWithId } from '@/types';
 import { gsap } from 'gsap';
 import { LayoutGrid, List, SlidersHorizontal, Star } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { FilterSidebar } from './components/new-sidebar';
 
 // 1. Define a TypeScript type for the allowed section names
 type FilterSection = 'brand' | 'rating' | 'price';
+interface filterOptionList {
+    brands: string[];
+    rating: number[];
+}
 
-export default function ProductFilterSection() {
+export default function ProductFilterSection({
+    products,
+    meta,
+}: {
+    products: productsWithId[];
+    meta: IMeta;
+}) {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [restQuery, setRestQuery] = useState('');
+    const router = useRouter();
+    const [filterState, setFilterState] = useState<filterOptionList>({
+        brands: [],
+        rating: [],
+    });
+    const [priceRange, setPriceRange] = useState([10, 150]);
 
     // 2. Explicitly type the state to use those section names as keys
     const [expandedSections, setExpandedSections] = useState<
@@ -48,6 +68,8 @@ export default function ProductFilterSection() {
         }
     }, [isFilterOpen]);
 
+    console.log(products);
+
     // 3. Apply the type to the function parameter
     const toggleSection = (section: FilterSection) => {
         setExpandedSections((prev) => ({
@@ -81,6 +103,74 @@ export default function ProductFilterSection() {
         };
         getBrandsWithProducts();
     }, []);
+
+    const updateFilterParameters = (obj: {
+        brand?: string;
+        rating?: number;
+    }) => {
+        if (obj?.brand) {
+            setFilterState((prev) => {
+                const brand = obj.brand as string;
+                if (prev.brands.includes(brand)) {
+                    return {
+                        ...prev,
+                        brands: prev.brands.filter(
+                            (id: string) => id !== obj.brand,
+                        ),
+                    };
+                } else {
+                    return { ...prev, brands: [...prev.brands, brand] };
+                }
+            });
+        }
+        if (obj?.rating) {
+            setFilterState((prev) => {
+                const rating = obj.rating as number;
+                if (prev.rating.includes(rating)) {
+                    return {
+                        ...prev,
+                        rating: prev.rating.filter(
+                            (id: number) => id !== obj.rating,
+                        ),
+                    };
+                } else {
+                    return { ...prev, rating: [...prev.rating, rating] };
+                }
+            });
+        }
+    };
+    const searchParams = useSearchParams();
+    const applyFilterMethod = () => {
+        const parameters = Object.entries(
+            Object.fromEntries(searchParams.entries()),
+        );
+        const filtered = parameters.filter(
+            ([key]) =>
+                key !== 'minPrice' &&
+                key !== 'maxPrice' &&
+                key !== 'brands' &&
+                key !== 'rating' &&
+                key !== 'page' &&
+                key !== 'category',
+        );
+        const string: string[] = [];
+        filtered.forEach((param) => {
+            const [key, value] = param;
+            string.push(`${key}=${value}`);
+        });
+
+        if (filterState.brands.length) {
+            string.push(`brands=${filterState.brands.toString()}`);
+        }
+        if (filterState.rating.length) {
+            string.push(`rating=${filterState.rating.toString()}`);
+        }
+        if (priceRange) {
+            string.push(`minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`);
+        }
+        setRestQuery(string.join('&'));
+        router.push(`/products?${string.join('&')}`);
+    };
 
     return (
         <div className="min-h-screen bg-white text-slate-900 font-sans p-6 md:p-10 max-w-[1600px] mx-auto">
@@ -137,68 +227,71 @@ export default function ProductFilterSection() {
                                 : `flex flex-col gap-6`
                         }
                     >
-                        {dummyProducts.map((item) => (
+                        {products.map((item) => (
                             <div
-                                key={item}
+                                key={item._id}
                                 className={`group relative ${viewMode === 'list' ? ' flex gap-8 items-center border-b pb-6' : ''}`}
                             >
                                 <div
-                                    className={`bg-slate-100 relative ${viewMode === 'list' ? 'w-48 h-64 shrink-0' : 'aspect-[3/4] w-full mb-4'}`}
+                                    className={`bg-slate-100 relative overflow-hidden ${viewMode === 'list' ? 'w-48 h-64 shrink-0' : 'aspect-[3/4] w-full mb-4'}`}
                                 >
-                                    <div className="absolute top-2 left-2 bg-black text-white text-[10px] uppercase px-2 py-1 font-bold">
-                                        New Colors
-                                    </div>
+                                    <Image
+                                        src={item.imageUrls?.[0]}
+                                        alt="Product image" // Replace with item.name or a relevant description
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    />
                                 </div>
                                 <div>
-                                    <div className="flex gap-1 mb-2">
-                                        <div className="w-3 h-3 bg-amber-700 border border-slate-300"></div>
-                                        <div className="w-3 h-3 bg-slate-800 border border-slate-300"></div>
-                                        <div className="w-3 h-3 bg-slate-400 border border-slate-300"></div>
-                                    </div>
                                     <h3 className="font-bold text-sm uppercase mb-1">
-                                        T2 Workpant
+                                        {item.name}
                                     </h3>
                                     <div className="flex items-center gap-1 mb-1">
                                         <div className="flex">
-                                            <Star
-                                                size={12}
-                                                className="fill-black text-black"
-                                            />
-                                            <Star
-                                                size={12}
-                                                className="fill-black text-black"
-                                            />
-                                            <Star
-                                                size={12}
-                                                className="fill-black text-black"
-                                            />
-                                            <Star
-                                                size={12}
-                                                className="fill-black text-black"
-                                            />
-                                            <Star
-                                                size={12}
-                                                className="text-black"
-                                            />
+                                            {Array.from({
+                                                length: item.averageRating,
+                                            }).map((_, idx) => (
+                                                <Star
+                                                    key={idx}
+                                                    size={12}
+                                                    className="fill-black text-black"
+                                                />
+                                            ))}
                                         </div>
                                         <span className="text-xs text-slate-500">
-                                            4.0 (1830)
+                                            {item.averageRating.toFixed(2)} (
+                                            {item.ratingCount})
                                         </span>
                                     </div>
                                     <p className="text-sm font-medium">
-                                        $99.00
+                                        BDT {item.offerPrice}
                                     </p>
                                 </div>
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 pointer-events-auto">
-                                    <Button
-                                        variant="secondary"
-                                        className="bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
-                                    >
-                                        + Quick Add
-                                    </Button>
+                                    <div className="flex flex-col gap-2">
+                                        <Button
+                                            variant="secondary"
+                                            className="bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
+                                        >
+                                            + Quick Add
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            className="bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
+                                        >
+                                            View Detail
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                    <div className="flex justify-center py-4">
+                        <TablePagination
+                            totalPage={meta?.totalPage}
+                            restQuery={restQuery}
+                        />
                     </div>
                 </div>
             </div>

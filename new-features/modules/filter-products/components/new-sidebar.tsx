@@ -14,12 +14,23 @@ export interface FilterSidebarProps {
     expandedSections: Record<FilterSection, boolean>;
     toggleSection: (section: FilterSection) => void;
     filterData: FilterDataStructure;
+    // NEW PROPS ADDED:
+    filterState: { brands: string[]; rating: number[] };
+    onFilterChange: (obj: {
+        brand?: string;
+        rating?: number;
+        price?: string;
+    }) => void;
+    selectedPrice?: string; // To track which price string is currently selected
 }
 
 export const FilterSidebar = ({
     expandedSections,
     toggleSection,
     filterData,
+    filterState,
+    onFilterChange,
+    selectedPrice,
 }: FilterSidebarProps) => {
     return (
         <div className="w-[280px] pr-6 flex flex-col">
@@ -50,6 +61,12 @@ export const FilterSidebar = ({
                             >
                                 <Checkbox
                                     id={brand._id}
+                                    checked={filterState.brands.includes(
+                                        brand._id,
+                                    )} // Check state
+                                    onCheckedChange={() =>
+                                        onFilterChange({ brand: brand._id })
+                                    } // Trigger update
                                     className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                                 />
                                 <span className="text-sm text-slate-700">
@@ -86,7 +103,16 @@ export const FilterSidebar = ({
                                 key={idx}
                                 className="flex items-center gap-3 cursor-pointer group"
                             >
-                                <div className="w-4 h-4 border border-slate-400 rounded-sm flex items-center justify-center group-hover:border-black transition-colors" />
+                                {/* Replaced the fake div with actual Checkbox */}
+                                <Checkbox
+                                    checked={filterState.rating.includes(
+                                        rating,
+                                    )} // Check state
+                                    onCheckedChange={() =>
+                                        onFilterChange({ rating: rating })
+                                    } // Trigger update
+                                    className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 transition-colors"
+                                />
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: 5 }).map(
                                         (_, starIdx) => (
@@ -136,7 +162,14 @@ export const FilterSidebar = ({
                                 key={idx}
                                 className="flex items-center gap-3 cursor-pointer group"
                             >
-                                <div className="w-4 h-4 border border-slate-400 rounded-sm flex items-center justify-center group-hover:border-black transition-colors" />
+                                {/* Replaced the fake div with actual Checkbox */}
+                                <Checkbox
+                                    checked={selectedPrice === price} // Price is usually single-select
+                                    onCheckedChange={() =>
+                                        onFilterChange({ price: price })
+                                    } // Trigger update
+                                    className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 transition-colors"
+                                />
                                 <span className="text-sm text-slate-700">
                                     {price}
                                 </span>

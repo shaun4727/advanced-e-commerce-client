@@ -33,7 +33,10 @@ export default function ProductFilterSection({
         brands: [],
         rating: [],
     });
-    const [priceRange, setPriceRange] = useState([10, 150]);
+    // Replace the old priceRange state with this:
+    const [selectedPrice, setSelectedPrice] = useState<string | undefined>(
+        undefined,
+    );
 
     // 2. Explicitly type the state to use those section names as keys
     const [expandedSections, setExpandedSections] = useState<
@@ -67,8 +70,6 @@ export default function ProductFilterSection({
             });
         }
     }, [isFilterOpen]);
-
-    console.log(products);
 
     // 3. Apply the type to the function parameter
     const toggleSection = (section: FilterSection) => {
@@ -107,6 +108,7 @@ export default function ProductFilterSection({
     const updateFilterParameters = (obj: {
         brand?: string;
         rating?: number;
+        price?: string;
     }) => {
         if (obj?.brand) {
             setFilterState((prev) => {
@@ -138,7 +140,25 @@ export default function ProductFilterSection({
                 }
             });
         }
+        if (obj?.price) {
+            setSelectedPrice((prevPrice) =>
+                // If clicking the currently selected price, uncheck it (set to undefined).
+                // Otherwise, set it to the new price.
+                prevPrice === obj.price ? undefined : obj.price,
+            );
+        }
     };
+
+    useEffect(() => {
+        const hasFilters =
+            filterState.brands.length > 0 ||
+            filterState.rating.length > 0 ||
+            selectedPrice !== undefined;
+        if (hasFilters || selectedPrice === undefined) {
+            applyFilterMethod();
+        }
+    }, [filterState, selectedPrice]); // This runs automatically when a checkbox changes the state!
+
     const searchParams = useSearchParams();
     const applyFilterMethod = () => {
         const parameters = Object.entries(
@@ -165,8 +185,23 @@ export default function ProductFilterSection({
         if (filterState.rating.length) {
             string.push(`rating=${filterState.rating.toString()}`);
         }
-        if (priceRange) {
-            string.push(`minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`);
+        if (selectedPrice) {
+            let minPrice = 0;
+            let maxPrice = 1000000; // arbitrary high max
+
+            if (selectedPrice === 'Under $50') {
+                maxPrice = 50;
+            } else if (selectedPrice === '$50 - $100') {
+                minPrice = 50;
+                maxPrice = 100;
+            } else if (selectedPrice === '$100 - $150') {
+                minPrice = 100;
+                maxPrice = 150;
+            } else if (selectedPrice === 'Over $150') {
+                minPrice = 150;
+            }
+
+            string.push(`minPrice=${minPrice}&maxPrice=${maxPrice}`);
         }
         setRestQuery(string.join('&'));
         router.push(`/products?${string.join('&')}`);
@@ -213,9 +248,12 @@ export default function ProductFilterSection({
                     style={{ width: 0, opacity: 0 }}
                 >
                     <FilterSidebar
-                        expandedSections={expandedSections} // Plural to match your state variable
-                        toggleSection={toggleSection} // Added missing handler prop
+                        expandedSections={expandedSections}
+                        toggleSection={toggleSection}
                         filterData={filterData}
+                        filterState={filterState}
+                        onFilterChange={updateFilterParameters}
+                        selectedPrice={selectedPrice} // <--- Pass the state down here
                     />
                 </div>
 
@@ -291,6 +329,7 @@ export default function ProductFilterSection({
                         <TablePagination
                             totalPage={meta?.totalPage}
                             restQuery={restQuery}
+                            meta={meta}
                         />
                     </div>
                 </div>

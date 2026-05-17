@@ -8,7 +8,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
 
     const { data: products, meta } = await getAllProducts(
         undefined,
-        undefined,
+        '10',
         query,
     );
     return <ProductFilterSection products={products} meta={meta} />;

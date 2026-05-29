@@ -12,7 +12,7 @@ export function ProductSearchResults({
     const router = useRouter();
 
     const getDetailOfTheProduct = (product: IProduct) => {
-        router.push(`/new-product-detail/${product._id}`);
+        router.push(`/product-detail/${product._id}`);
     };
 
     return (

@@ -1,14 +1,14 @@
-import FooterSection from '@/components/shared-components/footer-ui/footer-section';
-import { NavBar } from '@/components/shared-components/navbar-ui/navbar';
+import FooterSection from '@/new-features/shared/footer/footer-section';
+import MainNavbar from '@/new-features/shared/header/navbar';
 
-const ClientLayout = async ({ children }: { children: React.ReactNode }) => {
+const CommonNewLayout = ({ children }: { children: React.ReactNode }) => {
     return (
-        <main>
-            <NavBar />
+        <div>
+            <MainNavbar />
             {children}
             <FooterSection />
-        </main>
+        </div>
     );
 };
 
-export default ClientLayout;
+export default CommonNewLayout;

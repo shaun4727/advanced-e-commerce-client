@@ -11,7 +11,7 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import { navItem } from '@/types/new-navItems';
+import { catItem, navItem } from '@/types/new-navItems';
 import Image from 'next/image';
 
 export function MegaNavigationMenu({ megaMenu }: { megaMenu: navItem }) {
@@ -35,12 +35,16 @@ export function MegaNavigationMenu({ megaMenu }: { megaMenu: navItem }) {
                                                     </h1>
                                                 </li>
                                                 {nav.data.category?.map(
-                                                    (subNav) => (
+                                                    (subNav: catItem) => (
                                                         <li
-                                                            className="mb-1"
+                                                            className="mb-1 cursor-pointer"
                                                             key={subNav._id}
                                                         >
-                                                            {subNav.name}
+                                                            <Link
+                                                                href={`/products?category=${subNav._id}`}
+                                                            >
+                                                                {subNav.name}
+                                                            </Link>
                                                         </li>
                                                     ),
                                                 )}

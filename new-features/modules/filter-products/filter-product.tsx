@@ -2,13 +2,17 @@
 
 import { Button } from '@/components/ui/button';
 import TablePagination from '@/components/ui/core/EPTable/TablePagination';
+import { addProduct } from '@/redux/features/cartSlice';
+import { useAppDispatch } from '@/redux/hooks';
 import { homePageBrandWithProduct } from '@/services/Brand';
-import { IBrandWithProducts, IMeta, productsWithId } from '@/types';
+import { IBrandWithProducts, IMeta, IProduct, productsWithId } from '@/types';
 import { gsap } from 'gsap';
 import { LayoutGrid, List, SlidersHorizontal, Star } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { FilterSidebar } from './components/new-sidebar';
 
 // 1. Define a TypeScript type for the allowed section names
@@ -147,6 +151,16 @@ export default function ProductFilterSection({
                 prevPrice === obj.price ? undefined : obj.price,
             );
         }
+    };
+
+    const dispatch = useAppDispatch();
+    const handleAddProduct = (
+        product: IProduct,
+        e: React.MouseEvent<HTMLButtonElement>,
+    ) => {
+        e.stopPropagation();
+        dispatch(addProduct(product));
+        toast.success('Product added to cart', { id: 1 });
     };
 
     useEffect(() => {
@@ -309,17 +323,20 @@ export default function ProductFilterSection({
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 pointer-events-auto">
                                     <div className="flex flex-col gap-2">
                                         <Button
+                                            onClick={(e) =>
+                                                handleAddProduct(item, e)
+                                            }
                                             variant="secondary"
-                                            className="bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
+                                            className="bg-white cursor-pointer text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
                                         >
                                             + Quick Add
                                         </Button>
-                                        <Button
-                                            variant="secondary"
-                                            className="bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
+                                        <Link
+                                            href={`/new-product-detail/${item._id}`}
+                                            className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200 h-9 px-4 py-2 transition-colors"
                                         >
                                             View Detail
-                                        </Button>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

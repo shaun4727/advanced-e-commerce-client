@@ -142,9 +142,9 @@ export function ProductSlider({ products }: ProductSliderProps) {
                     ref={trackRef}
                     className="flex h-full w-full will-change-transform"
                 >
-                    {products.map((product) => (
+                    {products.map((product, index) => (
                         <div
-                            key={product._id}
+                            key={index}
                             // Width dictates items per view (100% on mobile, 50% md, 25% lg)
                             className="relative flex-shrink-0 w-full md:w-1/2 lg:w-1/4 h-full px-2 lg:px-4 group"
                         >
@@ -152,8 +152,11 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                 {/* Image & Quick Add Area */}
                                 <div className="relative flex-1 bg-[#F9F8F6] overflow-hidden mb-4 flex items-center justify-center pointer-events-none md:pointer-events-auto">
                                     <Image
-                                        src={product.imageUrls?.[0]}
-                                        alt={product.name}
+                                        src={
+                                            product.imageUrls?.[0] ||
+                                            '/placeholder-image.png'
+                                        }
+                                        alt={product.name || 'Product Image'}
                                         fill
                                         className="object-cover object-center mix-blend-multiply p-6"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -171,7 +174,7 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                                 + Quick Add
                                             </Button>
                                             <Link
-                                                href={`/products/${product._id}`}
+                                                href={`/new-product-detail/${product._id}`}
                                                 className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200 h-9 px-4 py-2 transition-colors"
                                             >
                                                 View Detail
@@ -190,12 +193,10 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                             {typeof product.category ===
                                             'string'
                                                 ? product.category
-                                                : product.category.name ||
-                                                  ' '}{' '}
-                                            {/* NBSP to hold height if empty */}
+                                                : product.category?.name || ' '}
                                         </p>
                                         <div className="flex items-center gap-1 text-[10px] font-bold">
-                                            {product.ratingCount.toFixed(1)}{' '}
+                                            {product.ratingCount?.toFixed(1)}{' '}
                                             <Star className="size-3 fill-black text-black" />
                                         </div>
                                     </div>

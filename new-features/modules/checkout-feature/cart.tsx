@@ -228,11 +228,29 @@ export function CartDrawer({ children }: { children: React.ReactNode }) {
                                             }
                                         />
                                     </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Input
+                                            placeholder="STREET NAME"
+                                            className="rounded-none uppercase text-xs h-10 bg-gray-50 border-gray-200"
+                                            value={city}
+                                            onChange={(e) =>
+                                                setCity(e.target.value)
+                                            }
+                                        />
+                                        <Input
+                                            placeholder="AREA NAME"
+                                            className="rounded-none uppercase text-xs h-10 bg-gray-50 border-gray-200"
+                                            value={zipCode}
+                                            onChange={(e) =>
+                                                setZipCode(e.target.value)
+                                            }
+                                        />
+                                    </div>
                                     <Button
                                         variant="outline"
                                         className="w-full rounded-none uppercase text-xs h-10 font-bold tracking-widest border-gray-300"
                                     >
-                                        Calculate Rates
+                                        Add Shipping Address
                                     </Button>
                                 </AccordionContent>
                             </AccordionItem>

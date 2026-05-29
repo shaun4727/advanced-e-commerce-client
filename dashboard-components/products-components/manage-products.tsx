@@ -232,7 +232,11 @@ const ManageProducts = ({
                 </div>
             </div>
             <EPTable columns={columns} data={products || []} />
-            <TablePagination totalPage={meta?.totalPage} restQuery="" />
+            <TablePagination
+                totalPage={meta?.totalPage}
+                restQuery=""
+                meta={meta}
+            />
         </div>
     );
 };

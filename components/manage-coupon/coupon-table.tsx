@@ -12,7 +12,7 @@ const CouponTable = ({ coupons }: { coupons: ICouponData[]; meta: IMeta }) => {
     const handleView = (product: ICouponData) => {
         console.log('Viewing product:', product);
     };
-
+    const meta = { page: 1, limit: 2, total: 3, totalPage: 4 };
     const columns: ColumnDef<ICouponData>[] = [
         {
             accessorKey: 'code',
@@ -70,7 +70,7 @@ const CouponTable = ({ coupons }: { coupons: ICouponData[]; meta: IMeta }) => {
     return (
         <div className="my-5">
             <EPTable columns={columns} data={coupons || []} />
-            <TablePagination totalPage={0} restQuery="" />
+            <TablePagination totalPage={0} restQuery="" meta={meta} />
         </div>
     );
 };

@@ -204,32 +204,69 @@ export function CartDrawer({ children }: { children: React.ReactNode }) {
         );
     };
 
-    // Step 2: Finalize Order API Call
+    // Inside CartDrawer.tsx
+
     const handleFinalOrder = async (type: string) => {
-        const toastId = toast.loading('Placing your order...');
+        const toastId = toast.loading(
+            type === orderType.ssl
+                ? 'Redirecting to secure payment...'
+                : 'Placing your order...',
+        );
+
         try {
-            dispatch(
-                updatePaymentMethod(type === orderType.cod ? 'COD' : 'Online'),
-            );
+            const paymentMethod = type === orderType.cod ? 'COD' : 'Online';
+            dispatch(updatePaymentMethod(paymentMethod));
 
-            let orderData = coupon.code
-                ? { ...order, coupon: coupon.code, OrderType: type }
-                : { ...order };
-            orderData.paymentMethod = type;
+            // 1. Format the products array exactly how your backend expects it
+            const formattedProducts = cartProducts.map((item: any) => ({
+                product: item._id,
+                quantity: item.orderQuantity ?? 1, // Fallback to 1 so TypeScript knows it's strictly a number
+                color: item.color || 'Default', // Add the color property required by IOrderProduct
+            }));
 
-            const res = await createOrder(orderData);
+            // 2. Build the final payload matching your backend IOrder schema
+            const orderPayload = {
+                products: formattedProducts,
+                shippingAddress: getValues(), // The validated address from React Hook Form
+                paymentMethod: paymentMethod,
+                shop: shopId, // Make sure shopId is correctly fetched from your Redux state
+                coupon: coupon?.code || undefined, // Send string code, backend resolves to ObjectId
+                // Note: Your backend should ideally recalculate finalAmount to prevent frontend tampering,
+                // but if it expects it from the frontend, include it here:
+                totalAmount: subTotal,
+                finalAmount: grandTotal,
+            };
+
+            // 3. Fire the API call
+            const res = await createOrder(orderPayload);
 
             if (res.success) {
-                socket.emit('orderPlaced');
-                toast.success(res.message, { id: toastId });
+                // Optional: Notify other connected clients (admin dashboard)
+                socket?.emit('orderPlaced');
+
+                toast.success(res.message || 'Order initialized', {
+                    id: toastId,
+                });
                 dispatch(clearCart());
                 dispatch(updateGlobalLoaderState(true));
-                router.push('/dashboard/user/order-history');
+
+                // 4. Handle SSLCommerz Redirect
+                if (paymentMethod === 'Online' && res.data?.paymentUrl) {
+                    // This redirects the user out of your Next.js app to the SSLCommerz hosted checkout page
+                    window.location.href = res.data.paymentUrl;
+                } else {
+                    // Handle Cash on Delivery (COD) Success Route
+                    router.push('/dashboard/user/order-history?status=success');
+                }
             } else {
                 toast.error(res.message || 'Checkout failed', { id: toastId });
+                dispatch(updateGlobalLoaderState(false));
             }
         } catch (error: any) {
-            toast.error(error.message || 'An error occurred', { id: toastId });
+            toast.error(error.message || 'An error occurred during checkout', {
+                id: toastId,
+            });
+            dispatch(updateGlobalLoaderState(false));
         }
     };
 

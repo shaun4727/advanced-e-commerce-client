@@ -32,7 +32,7 @@ export default function ProductDetailFeature({
     const [quantity, setQuantity] = useState(1);
     const [email, setEmail] = useState('');
     const dispatch = useAppDispatch();
-    const [similarProduct, setSimilarProduct] = useState<IProduct[]>([]);
+    const [similarProducts, setSimilarProducts] = useState<IProduct[]>([]);
     const productSectionRef = useRef(null);
 
     const incrementQuantity = () => setQuantity((prev) => prev + 1);
@@ -57,10 +57,10 @@ export default function ProductDetailFeature({
             if (typeof product.category === 'string') {
                 return;
             }
-            const res = await getAllProducts(undefined, '4', {
+            const res = await getAllProducts(undefined, '7', {
                 category: product.category._id,
             });
-            setSimilarProduct(res.data);
+            setSimilarProducts(res.data);
         } catch (err) {
             console.log(err);
         }
@@ -191,7 +191,7 @@ export default function ProductDetailFeature({
                                 <div className="space-y-4">
                                     <div className="flex items-center space-x-4">
                                         <span className="text-sm font-medium text-gray-700">
-                                            QTY :
+                                            QTY :similarProducts
                                         </span>
                                         <div className="flex items-center border border-gray-300 ">
                                             <Button
@@ -388,8 +388,9 @@ export default function ProductDetailFeature({
                         </div>
                     </div>
                 </div>
+
                 {/* Similar Products */}
-                <SimilarProducts />
+                <SimilarProducts products={similarProducts} />
             </div>
         </div>
     );

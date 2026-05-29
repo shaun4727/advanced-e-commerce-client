@@ -2,11 +2,28 @@
 
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { Search, ShoppingCart, UserCircle } from 'lucide-react';
+import {
+    CreditCard,
+    LogOut,
+    Search,
+    ShoppingCart,
+    UserCircle,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useUser } from '@/context/UserContext';
 import { CartDrawer } from '@/new-features/modules/checkout-feature/cart';
@@ -23,7 +40,7 @@ import { MobileMenu } from './mobile-menu';
 export default function MainNavbar() {
     const headerRef = useRef(null);
     const [navigationMenu, setNavigationMenu] = useState<navItem[]>([]);
-    const { setIsLoading } = useUser();
+    const { setIsLoading, user } = useUser();
     const router = useRouter();
     const cartProducts = useAppSelector(orderedProductsSelector);
 
@@ -133,14 +150,58 @@ export default function MainNavbar() {
                         </SheetContent>
                     </Sheet>
 
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="cursor-pointer"
-                        onClick={() => router.push('/login')}
-                    >
-                        <UserCircle className="size-5" />
-                    </Button>
+                    {user && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Avatar>
+                                    <AvatarImage
+                                        src="https://github.com/shadcn.png"
+                                        alt="@shadcn"
+                                    />
+                                    <AvatarFallback>CN</AvatarFallback>
+                                </Avatar>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56 mt-2">
+                                <DropdownMenuLabel>
+                                    My Account
+                                </DropdownMenuLabel>
+
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                        onClick={dashboardHandler}
+                                    >
+                                        <CreditCard />
+                                        <span>Dashboard</span>
+                                        <DropdownMenuShortcut>
+                                            ⌘B
+                                        </DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+
+                                <DropdownMenuGroup>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="bg-red-500 text-white cursor-pointer focus:bg-red-600 focus:text-white"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>Logout</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+
+                    {!user && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="cursor-pointer"
+                            onClick={() => router.push('/login')}
+                        >
+                            <UserCircle className="size-5" />
+                        </Button>
+                    )}
 
                     <CartDrawer>
                         <Button

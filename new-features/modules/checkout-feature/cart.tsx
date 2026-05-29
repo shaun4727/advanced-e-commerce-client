@@ -1,10 +1,26 @@
 'use client';
 
 import { useGSAP } from '@gsap/react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import gsap from 'gsap';
-import { Lock, Minus, Plus, RefreshCcw, Shield, Truck } from 'lucide-react';
+import {
+    BadgeDollarSign,
+    BanknoteArrowDown,
+    Lock,
+    Minus,
+    Plus,
+    RefreshCcw,
+    Shield,
+    ShoppingBag,
+    Truck,
+    X,
+} from 'lucide-react';
 import Image from 'next/image';
-import React, { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import z from 'zod';
 
 import {
     Accordion,
@@ -22,34 +38,111 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 
+// --- Redux & Services Imports ---
+import { orderType } from '@/constants';
+import { useUser } from '@/context/UserContext';
+import { useSocket } from '@/hooks/useSocket';
+import { currencyFormatter } from '@/lib/currencyFormatters';
+import {
+    clearCart,
+    couponSelector,
+    decrementOrderQuantity,
+    discountAmountSelector,
+    fetchCoupon,
+    grandTotalSelector,
+    incrementOrderQuantity,
+    orderedProductsSelector,
+    orderSelector,
+    removeProduct,
+    shippingAddressSelector,
+    shippingCostSelector,
+    shopSelector,
+    subTotalSelector,
+    updateGlobalLoaderState,
+    updatePaymentMethod,
+    updateShippingAddress,
+} from '@/redux/features/cartSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { createOrder } from '@/services/CartServices';
+import { IProduct } from '@/types';
+
+// --- Validation Schema ---
+const shippingAddressSchema = z.object({
+    city: z.string().min(1, 'City required'),
+    zip_code: z.string().min(1, 'Zip required'),
+    street_or_building_name: z.string().min(1, 'Street required'),
+    area: z.string().min(1, 'Area required'),
+});
+
+type shippingAddressData = z.infer<typeof shippingAddressSchema>;
+
 export function CartDrawer({ children }: { children: React.ReactNode }) {
     const cartRef = useRef(null);
+    const router = useRouter();
 
-    // Future API/Redux State Wiring Points
+    // --- Hooks & Redux State ---
+    const dispatch = useAppDispatch();
+    const user = useUser();
+    const { socket } = useSocket();
+
+    const cartProducts = useAppSelector(orderedProductsSelector);
+    const subTotal = useAppSelector(subTotalSelector);
+    const discountAmount = useAppSelector(discountAmountSelector);
+    const shippingCost = useAppSelector(shippingCostSelector);
+    const grandTotal = useAppSelector(grandTotalSelector);
+    const order = useAppSelector(orderSelector);
+    const shippingAddress = useAppSelector(shippingAddressSelector);
+    const coupon = useAppSelector(couponSelector);
+    const shopId = useAppSelector(shopSelector);
+
+    // --- Local UI State ---
     const [promoCode, setPromoCode] = useState('');
-    const [zipCode, setZipCode] = useState('');
-    const [city, setCity] = useState('');
+    const [isPaymentStep, setIsPaymentStep] = useState(false); // Controls the 2-step checkout UI
 
-    // Mock State (Replace with Redux cart state later)
-    const subtotal = 59.0;
-    const discount = 17.7; // e.g., from a SUMMER30 promo
-    const estimatedShipping = 10.0;
-    const grandTotal = subtotal - discount + estimatedShipping;
+    // Form Setup
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+        trigger,
+        getValues,
+    } = useForm<shippingAddressData>({
+        resolver: zodResolver(shippingAddressSchema),
+        defaultValues: {
+            city: shippingAddress?.city ?? '',
+            zip_code: shippingAddress?.zip_code ?? '',
+            street_or_building_name:
+                shippingAddress?.street_or_building_name ?? '',
+            area: shippingAddress?.area ?? '',
+        },
+    });
 
+    // Hydrate form from Redux if it exists
+    useEffect(() => {
+        if (shippingAddress) {
+            reset({
+                city: shippingAddress.city || '',
+                zip_code: shippingAddress.zip_code || '',
+                street_or_building_name:
+                    shippingAddress.street_or_building_name || '',
+                area: shippingAddress.area || '',
+            });
+        }
+    }, [shippingAddress, reset]);
+
+    // --- GSAP Animations ---
     const freeShippingThreshold = 100.0;
-    const progressValue = (subtotal / freeShippingThreshold) * 100;
+    const progressValue = (subTotal / freeShippingThreshold) * 100;
 
     useGSAP(
         () => {
-            // Animate the progress bar fill on open
             gsap.from('.progress-fill', {
                 width: 0,
                 duration: 1.2,
                 ease: 'power2.out',
                 delay: 0.5,
             });
-
-            // Staggered entrance for items and new accordion sections
             gsap.from('.cart-anim-item', {
                 y: 20,
                 opacity: 0,
@@ -62,6 +155,84 @@ export function CartDrawer({ children }: { children: React.ReactNode }) {
         { scope: cartRef },
     );
 
+    // --- Actions ---
+    const applyPromoCode = async () => {
+        if (!promoCode) return;
+        try {
+            await dispatch(
+                fetchCoupon({
+                    couponCode: promoCode,
+                    subTotal: Number(subTotal),
+                    shopId: String(shopId),
+                }) as any,
+            );
+            setPromoCode('');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to apply promo');
+        }
+    };
+
+    const handleRemovePromo = () => {
+        // You might need a clearCoupon action in your slice to truly remove it
+        // dispatch(clearCoupon());
+    };
+
+    // Step 1: Validate Form & Switch to Payment Options
+    const handleProceedToCheckout = async () => {
+        if (!user?.user) {
+            toast.error('Please login first to checkout.');
+            router.push('/login');
+            return;
+        }
+
+        // Validate the react-hook-form inputs manually before proceeding
+        const isValid = await trigger();
+        if (!isValid) {
+            toast.error('Please fill out all required shipping details.');
+            return;
+        }
+
+        // Save validated address to Redux
+        dispatch(updateShippingAddress(getValues()));
+
+        // Switch UI to Payment Step with GSAP animation
+        setIsPaymentStep(true);
+        gsap.fromTo(
+            '.payment-options-anim',
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
+        );
+    };
+
+    // Step 2: Finalize Order API Call
+    const handleFinalOrder = async (type: string) => {
+        const toastId = toast.loading('Placing your order...');
+        try {
+            dispatch(
+                updatePaymentMethod(type === orderType.cod ? 'COD' : 'Online'),
+            );
+
+            let orderData = coupon.code
+                ? { ...order, coupon: coupon.code, OrderType: type }
+                : { ...order };
+            orderData.paymentMethod = type;
+
+            const res = await createOrder(orderData);
+
+            if (res.success) {
+                socket.emit('orderPlaced');
+                toast.success(res.message, { id: toastId });
+                dispatch(clearCart());
+                dispatch(updateGlobalLoaderState(true));
+                router.push('/dashboard/user/order-history');
+            } else {
+                toast.error(res.message || 'Checkout failed', { id: toastId });
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'An error occurred', { id: toastId });
+        }
+    };
+
     return (
         <Sheet>
             <SheetTrigger asChild>{children}</SheetTrigger>
@@ -71,18 +242,17 @@ export function CartDrawer({ children }: { children: React.ReactNode }) {
             >
                 {/* Header Section */}
                 <div className="p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <SheetTitle className="text-xl font-bold uppercase tracking-tight">
-                            Cart (1)
-                        </SheetTitle>
-                    </div>
-
-                    {/* Shipping Progress */}
+                    <SheetTitle className="text-xl font-bold uppercase tracking-tight">
+                        Cart ({cartProducts.length})
+                    </SheetTitle>
                     <div className="space-y-2">
                         <p className="text-sm font-medium text-muted-foreground">
                             Spend $
-                            {(freeShippingThreshold - subtotal).toFixed(2)} more
-                            and get free shipping!
+                            {Math.max(
+                                freeShippingThreshold - subTotal,
+                                0,
+                            ).toFixed(2)}{' '}
+                            more for free shipping!
                         </p>
                         <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                             <div
@@ -97,228 +267,296 @@ export function CartDrawer({ children }: { children: React.ReactNode }) {
 
                 <Separator />
 
-                {/* Scrollable Content */}
+                {/* Scrollable Content Area */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                    {/* Cart Item */}
-                    <div className="cart-anim-item flex gap-4">
-                        <div className="relative aspect-square w-24 bg-[#F5F5F5] overflow-hidden rounded-sm">
-                            <Image
-                                src="https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=300"
-                                alt="Product"
-                                fill
-                                className="object-cover"
-                            />
+                    {/* Empty State */}
+                    {cartProducts.length === 0 && (
+                        <div className="text-center py-12 space-y-4">
+                            <ShoppingBag className="mx-auto size-12 text-gray-300" />
+                            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                                Your cart is empty
+                            </p>
                         </div>
-                        <div className="flex-1 space-y-1">
-                            <h4 className="font-bold uppercase text-sm leading-tight">
-                                Cloud Werkshort
-                            </h4>
-                            <p className="text-sm font-medium">
-                                ${subtotal.toFixed(2)}
-                            </p>
-                            <p className="text-xs text-muted-foreground uppercase">
-                                Deep Grey / XL / 8
-                            </p>
+                    )}
 
-                            <div className="flex items-center justify-between pt-2">
-                                <div className="flex items-center border border-input rounded-sm">
-                                    <button className="p-1 px-2 hover:bg-accent transition-colors">
-                                        <Minus className="size-3" />
-                                    </button>
-                                    <span className="px-3 text-sm font-bold">
-                                        1
-                                    </span>
-                                    <button className="p-1 px-2 hover:bg-accent transition-colors">
-                                        <Plus className="size-3" />
+                    {/* Cart Items */}
+                    {cartProducts.map((item: IProduct) => (
+                        <div
+                            key={item._id}
+                            className="cart-anim-item flex gap-4"
+                        >
+                            <div className="relative aspect-square w-24 bg-[#F5F5F5] overflow-hidden rounded-sm">
+                                <Image
+                                    src={
+                                        item.imageUrls[0] || '/placeholder.svg'
+                                    }
+                                    alt={item.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                                {!item.stock && (
+                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                        <span className="text-[10px] font-bold text-white uppercase">
+                                            Out
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-1 space-y-1">
+                                <h4 className="font-bold uppercase text-sm leading-tight">
+                                    {item.name}
+                                </h4>
+                                <p className="text-sm font-medium text-blue-600">
+                                    $
+                                    {item.offerPrice
+                                        ? item.offerPrice.toFixed(2)
+                                        : item.price.toFixed(2)}
+                                </p>
+                                <div className="flex items-center justify-between pt-2">
+                                    <div className="flex items-center border border-input rounded-sm">
+                                        <button
+                                            onClick={() =>
+                                                dispatch(
+                                                    decrementOrderQuantity(
+                                                        item._id,
+                                                    ),
+                                                )
+                                            }
+                                            disabled={item.stock <= 1}
+                                            className="p-1 px-2 hover:bg-accent disabled:opacity-50"
+                                        >
+                                            <Minus className="size-3" />
+                                        </button>
+                                        <span className="px-3 text-sm font-bold">
+                                            {item.orderQuantity}
+                                        </span>
+                                        <button
+                                            onClick={() =>
+                                                dispatch(
+                                                    incrementOrderQuantity(
+                                                        item._id,
+                                                    ),
+                                                )
+                                            }
+                                            disabled={
+                                                !item.stock ||
+                                                Boolean(
+                                                    item.orderQuantity &&
+                                                    item.orderQuantity >=
+                                                        item.stock,
+                                                )
+                                            }
+                                            className="p-1 px-2 hover:bg-accent disabled:opacity-50"
+                                        >
+                                            <Plus className="size-3" />
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() =>
+                                            dispatch(removeProduct(item._id))
+                                        }
+                                        className="text-xs font-bold uppercase underline underline-offset-4 hover:text-red-600 transition-colors"
+                                    >
+                                        Remove
                                     </button>
                                 </div>
-                                <button className="text-xs font-bold uppercase underline underline-offset-4 hover:text-red-600 transition-colors">
-                                    Remove
-                                </button>
                             </div>
                         </div>
-                    </div>
+                    ))}
 
-                    {/* Exclusive Offer Banner */}
-                    <div className="cart-anim-item relative overflow-hidden bg-black text-white p-8 group">
-                        <div className="absolute inset-0 opacity-40">
-                            <Image
-                                src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=500"
-                                alt="worker"
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                        <div className="relative z-10 space-y-4">
-                            <div className="flex gap-2 items-center">
-                                <div className="w-1 h-4 bg-yellow-400" />
-                                <span className="text-[10px] font-bold tracking-widest uppercase text-yellow-400">
-                                    Exclusive Summer Offer
-                                </span>
-                            </div>
-                            <h3 className="text-3xl font-black leading-none uppercase italic">
-                                Buy One, Get One{' '}
-                                <span className="text-yellow-400">30% OFF</span>
-                            </h3>
-                            <p className="text-[10px] opacity-80 max-w-[200px] leading-relaxed uppercase">
-                                Technical performance meets summer comfort. Shop
-                                T1 and Cloud WerkShorts.
-                            </p>
-                            <Button className="w-full bg-yellow-400 text-black hover:bg-yellow-500 font-black uppercase rounded-none tracking-widest">
-                                Shop the Sale
-                            </Button>
-                        </div>
-                    </div>
-
-                    <Separator className="cart-anim-item" />
-
-                    {/* Missing Content Integration: Promo & Shipping Accordions */}
-                    <div className="cart-anim-item">
-                        <Accordion
-                            type="single"
-                            collapsible
-                            className="w-full space-y-2"
-                        >
-                            {/* Promo Code Accordion */}
-                            <AccordionItem value="promo" className="border-b-0">
-                                <AccordionTrigger className="hover:no-underline py-2 uppercase text-xs font-bold tracking-widest">
-                                    Have a Promo Code?
-                                </AccordionTrigger>
-                                <AccordionContent className="pt-2 pb-4">
-                                    <div className="flex gap-2">
-                                        <Input
-                                            placeholder="ENTER CODE"
-                                            className="rounded-none uppercase text-xs h-10 bg-gray-50 border-gray-200"
-                                            value={promoCode}
-                                            onChange={(e) =>
-                                                setPromoCode(e.target.value)
-                                            }
-                                        />
-                                        <Button className="rounded-none bg-black text-white hover:bg-gray-800 uppercase text-xs h-10 px-6 font-bold tracking-widest">
-                                            Apply
-                                        </Button>
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-
-                            {/* Estimate Shipping Accordion */}
-                            <AccordionItem
-                                value="shipping"
-                                className="border-b-0"
+                    {/* Dynamic Accordions for Promo & Shipping Address */}
+                    {cartProducts.length > 0 && (
+                        <div className="cart-anim-item">
+                            <Accordion
+                                type="single"
+                                collapsible
+                                className="w-full space-y-2"
                             >
-                                <AccordionTrigger className="hover:no-underline py-2 uppercase text-xs font-bold tracking-widest">
-                                    Estimate Shipping
-                                </AccordionTrigger>
-                                <AccordionContent className="pt-2 pb-4 space-y-3">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Input
-                                            placeholder="CITY"
-                                            className="rounded-none uppercase text-xs h-10 bg-gray-50 border-gray-200"
-                                            value={city}
-                                            onChange={(e) =>
-                                                setCity(e.target.value)
-                                            }
-                                        />
-                                        <Input
-                                            placeholder="ZIP CODE"
-                                            className="rounded-none uppercase text-xs h-10 bg-gray-50 border-gray-200"
-                                            value={zipCode}
-                                            onChange={(e) =>
-                                                setZipCode(e.target.value)
-                                            }
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Input
-                                            placeholder="STREET NAME"
-                                            className="rounded-none uppercase text-xs h-10 bg-gray-50 border-gray-200"
-                                            value={city}
-                                            onChange={(e) =>
-                                                setCity(e.target.value)
-                                            }
-                                        />
-                                        <Input
-                                            placeholder="AREA NAME"
-                                            className="rounded-none uppercase text-xs h-10 bg-gray-50 border-gray-200"
-                                            value={zipCode}
-                                            onChange={(e) =>
-                                                setZipCode(e.target.value)
-                                            }
-                                        />
-                                    </div>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full rounded-none uppercase text-xs h-10 font-bold tracking-widest border-gray-300"
-                                    >
-                                        Add Shipping Address
-                                    </Button>
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                    </div>
+                                {/* PROMO CODE */}
+                                <AccordionItem
+                                    value="promo"
+                                    className="border-b-0"
+                                >
+                                    <AccordionTrigger className="hover:no-underline py-2 uppercase text-xs font-bold tracking-widest">
+                                        Have a Promo Code?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 pb-4">
+                                        <div className="flex gap-2 mb-2">
+                                            <Input
+                                                placeholder="ENTER CODE"
+                                                className="rounded-none uppercase text-xs h-10 bg-gray-50"
+                                                value={promoCode}
+                                                onChange={(e) =>
+                                                    setPromoCode(e.target.value)
+                                                }
+                                            />
+                                            <Button
+                                                onClick={applyPromoCode}
+                                                className="rounded-none bg-black text-white hover:bg-gray-800 uppercase text-xs h-10 px-6 font-bold tracking-widest"
+                                            >
+                                                Apply
+                                            </Button>
+                                        </div>
+                                        {coupon?.code && (
+                                            <div className="flex items-center justify-between bg-green-50 p-2 text-[10px] uppercase font-bold text-green-700 tracking-widest">
+                                                <span>
+                                                    Applied: {coupon.code}
+                                                </span>
+                                                <X
+                                                    className="size-3 cursor-pointer"
+                                                    onClick={handleRemovePromo}
+                                                />
+                                            </div>
+                                        )}
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* SHIPPING DETAILS FORM (Replaces standard estimator) */}
+                                <AccordionItem
+                                    value="shipping"
+                                    className="border-b-0"
+                                >
+                                    <AccordionTrigger className="hover:no-underline py-2 uppercase text-xs font-bold tracking-widest">
+                                        Shipping Details (Required)
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 pb-4">
+                                        <form className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <Input
+                                                        placeholder="CITY"
+                                                        {...register('city')}
+                                                        className={`rounded-none uppercase text-xs h-10 bg-gray-50 ${errors.city ? 'border-red-500' : ''}`}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Input
+                                                        placeholder="ZIP CODE"
+                                                        {...register(
+                                                            'zip_code',
+                                                        )}
+                                                        className={`rounded-none uppercase text-xs h-10 bg-gray-50 ${errors.zip_code ? 'border-red-500' : ''}`}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Input
+                                                placeholder="STREET / BUILDING"
+                                                {...register(
+                                                    'street_or_building_name',
+                                                )}
+                                                className={`rounded-none uppercase text-xs h-10 bg-gray-50 ${errors.street_or_building_name ? 'border-red-500' : ''}`}
+                                            />
+                                            <Input
+                                                placeholder="AREA"
+                                                {...register('area')}
+                                                className={`rounded-none uppercase text-xs h-10 bg-gray-50 ${errors.area ? 'border-red-500' : ''}`}
+                                            />
+                                        </form>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </div>
+                    )}
                 </div>
 
-                {/* Expanded Footer Section */}
+                {/* Footer Pricing & Checkout */}
                 <div className="p-6 bg-white border-t space-y-5">
-                    {/* Detailed Order Summary */}
                     <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between text-muted-foreground">
+                        <div className="flex justify-between text-muted-foreground">
                             <span className="uppercase text-[11px] font-bold tracking-wider">
                                 Subtotal
                             </span>
                             <span className="font-medium">
-                                ${subtotal.toFixed(2)}
+                                {currencyFormatter(subTotal)}
                             </span>
                         </div>
-                        {discount > 0 && (
-                            <div className="flex items-center justify-between text-green-600">
+                        {discountAmount > 0 && (
+                            <div className="flex justify-between text-green-600">
                                 <span className="uppercase text-[11px] font-bold tracking-wider">
                                     Discount
                                 </span>
                                 <span className="font-medium">
-                                    -${discount.toFixed(2)}
+                                    -{currencyFormatter(discountAmount)}
                                 </span>
                             </div>
                         )}
-                        <div className="flex items-center justify-between text-muted-foreground">
+                        <div className="flex justify-between text-muted-foreground">
                             <span className="uppercase text-[11px] font-bold tracking-wider">
-                                Est. Shipping
+                                Shipping
                             </span>
                             <span className="font-medium">
-                                ${estimatedShipping.toFixed(2)}
+                                {currencyFormatter(shippingCost)}
                             </span>
                         </div>
-
                         <Separator className="my-3" />
-
-                        <div className="flex items-center justify-between">
+                        <div className="flex justify-between">
                             <span className="font-black uppercase tracking-widest">
                                 Grand Total
                             </span>
-                            <span className="font-black text-lg">
-                                ${grandTotal.toFixed(2)} USD
+                            <span className="font-black text-lg text-blue-600">
+                                {currencyFormatter(grandTotal)}
                             </span>
                         </div>
                     </div>
 
-                    {/* Checkout Action */}
-                    <Button className="w-full bg-[#1A1A1A] text-white hover:bg-black h-14 rounded-none font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                        Checkout <Lock className="size-4" />
-                    </Button>
+                    {/* TWO STEP CHECKOUT LOGIC */}
+                    {!isPaymentStep ? (
+                        <Button
+                            onClick={handleProceedToCheckout}
+                            disabled={cartProducts.length === 0}
+                            className="w-full bg-[#1A1A1A] text-white hover:bg-black h-14 rounded-none font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+                        >
+                            Checkout <Lock className="size-4" />
+                        </Button>
+                    ) : (
+                        <div className="payment-options-anim space-y-2">
+                            <p className="text-[10px] text-center font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                                Select Payment Method
+                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                    onClick={() =>
+                                        handleFinalOrder(orderType.cod)
+                                    }
+                                    variant="outline"
+                                    className="h-16 rounded-none border-2 flex flex-col items-center justify-center gap-1 hover:border-black hover:bg-gray-50"
+                                >
+                                    <BanknoteArrowDown className="size-5" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                                        COD
+                                    </span>
+                                </Button>
+                                <Button
+                                    onClick={() =>
+                                        handleFinalOrder(orderType.ssl)
+                                    }
+                                    variant="outline"
+                                    className="h-16 rounded-none border-2 flex flex-col items-center justify-center gap-1 hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 text-blue-600 border-blue-200"
+                                >
+                                    <BadgeDollarSign className="size-5" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                                        Pay Online
+                                    </span>
+                                </Button>
+                            </div>
+                            <button
+                                onClick={() => setIsPaymentStep(false)}
+                                className="w-full mt-2 text-[10px] font-bold uppercase underline underline-offset-4 text-muted-foreground hover:text-black"
+                            >
+                                ← Back to Cart
+                            </button>
+                        </div>
+                    )}
 
-                    {/* Trust Badges */}
                     <div className="flex items-center justify-center gap-6 pt-2 text-[9px] uppercase text-muted-foreground font-bold tracking-widest">
                         <span className="flex flex-col items-center gap-1.5">
-                            <Truck className="size-4 text-black" /> Free Ship
-                            over $100
+                            <Truck className="size-4 text-black" /> Fast Ship
                         </span>
                         <span className="flex flex-col items-center gap-1.5">
                             <Shield className="size-4 text-black" /> Secure
-                            Checkout
                         </span>
                         <span className="flex flex-col items-center gap-1.5">
-                            <RefreshCcw className="size-4 text-black" /> Easy
-                            Returns
+                            <RefreshCcw className="size-4 text-black" /> Returns
                         </span>
                     </div>
                 </div>

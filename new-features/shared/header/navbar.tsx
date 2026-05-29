@@ -33,7 +33,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { logout } from '@/services/AuthService';
 import { getNavigationMenuApi } from '@/services/NavmenuService';
 import { navItem } from '@/types/new-navItems';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { SearchOverlayContent } from './components/search-overlay-content';
 import { MegaNavigationMenu } from './mega-menu';
@@ -45,6 +45,7 @@ export default function MainNavbar() {
     const { setIsLoading, user, setUser } = useUser();
     const router = useRouter();
     const cartProducts = useAppSelector(orderedProductsSelector);
+    const pathname = usePathname();
 
     useGSAP(
         () => {
@@ -174,7 +175,7 @@ export default function MainNavbar() {
                     {user && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Avatar>
+                                <Avatar className="w-6 h-6">
                                     <AvatarImage
                                         src="https://github.com/shadcn.png"
                                         alt="@shadcn"

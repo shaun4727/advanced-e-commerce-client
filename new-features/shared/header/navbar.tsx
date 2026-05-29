@@ -25,10 +25,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { protectedRoutes } from '@/constants';
 import { useUser } from '@/context/UserContext';
 import { CartDrawer } from '@/new-features/modules/checkout-feature/cart';
 import { orderedProductsSelector } from '@/redux/features/cartSlice';
 import { useAppSelector } from '@/redux/hooks';
+import { logout } from '@/services/AuthService';
 import { getNavigationMenuApi } from '@/services/NavmenuService';
 import { navItem } from '@/types/new-navItems';
 import { useRouter } from 'next/navigation';
@@ -40,7 +42,7 @@ import { MobileMenu } from './mobile-menu';
 export default function MainNavbar() {
     const headerRef = useRef(null);
     const [navigationMenu, setNavigationMenu] = useState<navItem[]>([]);
-    const { setIsLoading, user } = useUser();
+    const { setIsLoading, user, setUser } = useUser();
     const router = useRouter();
     const cartProducts = useAppSelector(orderedProductsSelector);
 
@@ -84,6 +86,25 @@ export default function MainNavbar() {
                 : '';
 
             return `/products?category=${catId}`;
+        }
+    };
+
+    const dashboardHandler = () => {
+        router.push('/dashboard');
+    };
+
+    const handleLogout = async () => {
+        try {
+            const res = await logout();
+
+            if (res === true) {
+                setUser(null);
+                if (protectedRoutes.some((route) => pathname.match(route))) {
+                    router.push('/');
+                }
+            }
+        } catch (err) {
+            console.log(err);
         }
     };
 

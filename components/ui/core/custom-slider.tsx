@@ -2,7 +2,7 @@
 
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
@@ -12,19 +12,6 @@ import { useAppDispatch } from '@/redux/hooks';
 import { IProduct } from '@/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
-
-// --- Types ---
-export interface Product {
-    id: string;
-    name: string;
-    price: number;
-    rating: number;
-    tag?: string;
-    promo?: string;
-    image: string;
-    colors: string[]; // hex codes
-    extraColorsCount?: number;
-}
 
 interface ProductSliderProps {
     products: IProduct[];
@@ -37,31 +24,31 @@ export function ProductSlider({ products }: ProductSliderProps) {
     const progressBarRef = useRef<HTMLDivElement>(null);
 
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [itemsPerView, setItemsPerView] = useState(4); // Default desktop
+    const [itemsPerView, setItemsPerView] = useState(4);
 
     // --- Touch Swipe State ---
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const minSwipeDistance = 50; // Minimum distance (px) required to trigger a swipe
+    const minSwipeDistance = 50;
 
-    // Handle responsive items per view
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 768) {
-                setItemsPerView(1); // Mobile: 1 item
+                setItemsPerView(1);
             } else if (window.innerWidth < 1024) {
-                setItemsPerView(2); // Tablet: 2 items
+                setItemsPerView(2);
             } else {
-                setItemsPerView(4); // Desktop: 4 items (as per image)
+                setItemsPerView(4);
             }
         };
 
-        handleResize(); // Initial check
+        handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const dispatch = useAppDispatch();
+
     const handleAddProduct = (
         product: IProduct,
         e: React.MouseEvent<HTMLButtonElement>,
@@ -75,16 +62,13 @@ export function ProductSlider({ products }: ProductSliderProps) {
     const progressPercentage =
         maxIndex > 0 ? (currentIndex / maxIndex) * 100 : 100;
 
-    // GSAP Animation for Slider and Progress Bar
     useGSAP(() => {
-        // 1. Move the slider track
         gsap.to(trackRef.current, {
             x: `-${currentIndex * (100 / itemsPerView)}%`,
             duration: 0.6,
             ease: 'power3.out',
         });
 
-        // 2. Scale the progress bar indicator
         gsap.to(progressBarRef.current, {
             width: `${progressPercentage}%`,
             duration: 0.6,
@@ -92,48 +76,33 @@ export function ProductSlider({ products }: ProductSliderProps) {
         });
     }, [currentIndex, itemsPerView]);
 
-    // Navigation Handlers
-    const handleNext = () => {
+    const handleNext = () =>
         setCurrentIndex((prev) => Math.min(prev + 1, maxIndex));
-    };
+    const handlePrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
-    const handlePrev = () => {
-        setCurrentIndex((prev) => Math.max(prev - 1, 0));
-    };
-
-    // --- Touch Event Handlers ---
     const onTouchStart = (e: React.TouchEvent) => {
-        setTouchEnd(null); // Reset touch end
+        setTouchEnd(null);
         setTouchStart(e.targetTouches[0].clientX);
     };
 
-    const onTouchMove = (e: React.TouchEvent) => {
+    const onTouchMove = (e: React.TouchEvent) =>
         setTouchEnd(e.targetTouches[0].clientX);
-    };
 
     const onTouchEnd = () => {
         if (!touchStart || !touchEnd) return;
-
         const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-            handleNext();
-        } else if (isRightSwipe) {
-            handlePrev();
-        }
+        if (distance > minSwipeDistance) handleNext();
+        else if (distance < -minSwipeDistance) handlePrev();
     };
 
     return (
         <div
-            className="w-full flex flex-col space-y-10 py-10 overflow-hidden"
+            className="w-full flex flex-col space-y-6 py-6 overflow-hidden"
             ref={sliderRef}
         >
-            {/* Track Container (Height of screen logic applied here) */}
+            {/* Track Container */}
             <div
-                className="relative w-full h-[75vh] md:h-[55vh]"
-                // Attach touch listeners to the wrapper
+                className="relative w-full h-[70vh] md:h-[55vh]"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -145,24 +114,32 @@ export function ProductSlider({ products }: ProductSliderProps) {
                     {products.map((product, index) => (
                         <div
                             key={index}
-                            // Width dictates items per view (100% on mobile, 50% md, 25% lg)
                             className="relative flex-shrink-0 w-full md:w-1/2 lg:w-1/4 h-full px-2 lg:px-4 group"
                         >
                             <div className="w-full h-full flex flex-col">
-                                {/* Image & Quick Add Area */}
-                                <div className="relative flex-1 bg-[#F9F8F6] overflow-hidden mb-4 flex items-center justify-center pointer-events-none md:pointer-events-auto">
-                                    <Image
-                                        src={
-                                            product.imageUrls?.[0] ||
-                                            '/placeholder-image.png'
-                                        }
-                                        alt={product.name || 'Product Image'}
-                                        fill
-                                        className="object-cover object-center mix-blend-multiply p-6"
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                                    />
-                                    {/* Quick Add Button (Visible on Hover) */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 pointer-events-auto">
+                                {/* Image Wrapper Container */}
+                                <div className="relative flex-1 bg-[#F9F8F6] overflow-hidden mb-3 flex flex-col items-center justify-center">
+                                    {/* MOBILE UX FIX: Wrap image in a native Link. The image itself acts as "View Detail" on touch devices. */}
+                                    <Link
+                                        href={`/product-detail/${product._id}`}
+                                        className="relative w-full h-full flex items-center justify-center p-6 cursor-pointer"
+                                    >
+                                        <Image
+                                            src={
+                                                product.imageUrls?.[0] ||
+                                                '/placeholder-image.png'
+                                            }
+                                            alt={
+                                                product.name || 'Product Image'
+                                            }
+                                            fill
+                                            className="object-cover object-center mix-blend-multiply p-6"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                        />
+                                    </Link>
+
+                                    {/* DESKTOP HOVER OVERLAY: Explicitly hidden on mobile to avoid touch layout collisions */}
+                                    <div className="absolute inset-0 hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 pointer-events-auto">
                                         <div className="flex flex-col gap-2">
                                             <Button
                                                 onClick={(e) =>
@@ -183,11 +160,24 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                     </div>
                                 </div>
 
-                                {/* Product Details Area */}
-                                <div className="space-y-2.5 pointer-events-none md:pointer-events-auto">
-                                    {/* Swatches */}
+                                {/* MOBILE UX FIX: Persistent Brutalist "Quick Add" Bar under the image (Mobile Only) */}
+                                <div className="block md:hidden mb-3">
+                                    <Button
+                                        onClick={(e) =>
+                                            handleAddProduct(product, e)
+                                        }
+                                        className="w-full bg-black text-white hover:bg-gray-900 rounded-none uppercase font-bold tracking-widest text-xs h-11 flex items-center justify-center gap-2"
+                                    >
+                                        <ShoppingBag className="size-4" />
+                                        Add To Cart
+                                    </Button>
+                                </div>
 
-                                    {/* Tags & Rating */}
+                                {/* Product Details Area */}
+                                <Link
+                                    href={`/product-detail/${product._id}`}
+                                    className="space-y-2 block cursor-pointer"
+                                >
                                     <div className="flex items-center justify-between">
                                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
                                             {typeof product.category ===
@@ -201,16 +191,15 @@ export function ProductSlider({ products }: ProductSliderProps) {
                                         </div>
                                     </div>
 
-                                    {/* Title & Price */}
                                     <div>
-                                        <h3 className="font-bold text-sm uppercase leading-tight">
+                                        <h3 className="font-bold text-sm uppercase leading-tight text-gray-900">
                                             {product.name}
                                         </h3>
-                                        <p className="text-sm text-muted-foreground font-medium">
+                                        <p className="text-sm text-gray-900 font-bold mt-0.5">
                                             ${product.price.toFixed(2)}
                                         </p>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
                         </div>
                     ))}
@@ -218,16 +207,14 @@ export function ProductSlider({ products }: ProductSliderProps) {
             </div>
 
             {/* Controls & Progress Bar Area */}
-            <div className="container mx-auto px-4 flex items-center justify-between gap-8 pt-4">
-                {/* Custom Progress Bar */}
+            <div className="container mx-auto px-4 flex items-center justify-between gap-8 pt-2">
                 <div className="flex-1 h-[2px] bg-gray-200 relative">
                     <div
                         ref={progressBarRef}
-                        className="absolute left-0 top-0 h-full bg-black min-w-[20%]" // min-w ensures it's never invisible
+                        className="absolute left-0 top-0 h-full bg-black min-w-[20%]"
                     />
                 </div>
 
-                {/* Navigation Arrows (Hidden on Mobile) */}
                 <div className="hidden md:flex items-center gap-2">
                     <Button
                         variant="outline"

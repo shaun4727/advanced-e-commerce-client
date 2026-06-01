@@ -7,7 +7,13 @@ import { useAppDispatch } from '@/redux/hooks';
 import { homePageBrandWithProduct } from '@/services/Brand';
 import { IBrandWithProducts, IMeta, IProduct, productsWithId } from '@/types';
 import { gsap } from 'gsap';
-import { LayoutGrid, List, SlidersHorizontal, Star } from 'lucide-react';
+import {
+    LayoutGrid,
+    List,
+    ShoppingBag,
+    SlidersHorizontal,
+    Star,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -15,7 +21,6 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { FilterSidebar } from './components/new-sidebar';
 
-// 1. Define a TypeScript type for the allowed section names
 type FilterSection = 'brand' | 'rating' | 'price';
 interface filterOptionList {
     brands: string[];
@@ -37,12 +42,11 @@ export default function ProductFilterSection({
         brands: [],
         rating: [],
     });
-    // Replace the old priceRange state with this:
+
     const [selectedPrice, setSelectedPrice] = useState<string | undefined>(
         undefined,
     );
 
-    // 2. Explicitly type the state to use those section names as keys
     const [expandedSections, setExpandedSections] = useState<
         Record<FilterSection, boolean>
     >({
@@ -54,28 +58,38 @@ export default function ProductFilterSection({
     const [brandWithProduct, setBrandWithProduct] = useState<
         IBrandWithProducts[]
     >([]);
-
     const sidebarRef = useRef<HTMLDivElement>(null);
 
+    // RESPONSIVE GSAP ANIMATION
     useEffect(() => {
-        if (isFilterOpen) {
+        // matchMedia allows us to define different animations for mobile vs desktop
+        let mm = gsap.matchMedia();
+
+        mm.add('(min-width: 768px)', () => {
+            // DESKTOP: Slide out horizontally (Animate Width)
             gsap.to(sidebarRef.current, {
-                width: 280,
-                opacity: 1,
+                width: isFilterOpen ? 280 : 0,
+                height: 'auto', // Ensure height isn't restricted
+                opacity: isFilterOpen ? 1 : 0,
                 duration: 0.4,
                 ease: 'power3.out',
             });
-        } else {
+        });
+
+        mm.add('(max-width: 767px)', () => {
+            // MOBILE: Slide down vertically (Animate Height)
             gsap.to(sidebarRef.current, {
-                width: 0,
-                opacity: 0,
+                height: isFilterOpen ? 'auto' : 0,
+                width: '100%', // Take full width of the column
+                opacity: isFilterOpen ? 1 : 0,
                 duration: 0.4,
                 ease: 'power3.out',
             });
-        }
+        });
+
+        return () => mm.revert(); // Cleanup on unmount
     }, [isFilterOpen]);
 
-    // 3. Apply the type to the function parameter
     const toggleSection = (section: FilterSection) => {
         setExpandedSections((prev) => ({
             ...prev,
@@ -89,19 +103,11 @@ export default function ProductFilterSection({
         prices: ['Under $50', '$50 - $100', '$100 - $150', 'Over $150'],
     };
 
-    const dummyProducts = Array.from({ length: 8 }).map((_, i) => i);
-
-    // sidebar apis
-
     useEffect(() => {
         const getBrandsWithProducts = async () => {
             try {
                 const res = await homePageBrandWithProduct();
-                if (res?.success) {
-                    setBrandWithProduct(res?.data);
-                } else {
-                    console.log(res?.message);
-                }
+                if (res?.success) setBrandWithProduct(res?.data);
             } catch (err) {
                 console.log(err);
             }
@@ -146,8 +152,6 @@ export default function ProductFilterSection({
         }
         if (obj?.price) {
             setSelectedPrice((prevPrice) =>
-                // If clicking the currently selected price, uncheck it (set to undefined).
-                // Otherwise, set it to the new price.
                 prevPrice === obj.price ? undefined : obj.price,
             );
         }
@@ -158,6 +162,7 @@ export default function ProductFilterSection({
         product: IProduct,
         e: React.MouseEvent<HTMLButtonElement>,
     ) => {
+        e.preventDefault();
         e.stopPropagation();
         dispatch(addProduct(product));
         toast.success('Product added to cart', { id: 1 });
@@ -171,7 +176,7 @@ export default function ProductFilterSection({
         if (hasFilters || selectedPrice === undefined) {
             applyFilterMethod();
         }
-    }, [filterState, selectedPrice]); // This runs automatically when a checkbox changes the state!
+    }, [filterState, selectedPrice]);
 
     const searchParams = useSearchParams();
     const applyFilterMethod = () => {
@@ -180,41 +185,33 @@ export default function ProductFilterSection({
         );
         const filtered = parameters.filter(
             ([key]) =>
-                key !== 'minPrice' &&
-                key !== 'maxPrice' &&
-                key !== 'brands' &&
-                key !== 'rating' &&
-                key !== 'page' &&
-                key !== 'category',
+                ![
+                    'minPrice',
+                    'maxPrice',
+                    'brands',
+                    'rating',
+                    'page',
+                    'category',
+                ].includes(key),
         );
         const string: string[] = [];
-        filtered.forEach((param) => {
-            const [key, value] = param;
-            string.push(`${key}=${value}`);
-        });
+        filtered.forEach(([key, value]) => string.push(`${key}=${value}`));
 
-        if (filterState.brands.length) {
+        if (filterState.brands.length)
             string.push(`brands=${filterState.brands.toString()}`);
-        }
-        if (filterState.rating.length) {
+        if (filterState.rating.length)
             string.push(`rating=${filterState.rating.toString()}`);
-        }
         if (selectedPrice) {
             let minPrice = 0;
-            let maxPrice = 1000000; // arbitrary high max
-
-            if (selectedPrice === 'Under $50') {
-                maxPrice = 50;
-            } else if (selectedPrice === '$50 - $100') {
+            let maxPrice = 1000000;
+            if (selectedPrice === 'Under $50') maxPrice = 50;
+            else if (selectedPrice === '$50 - $100') {
                 minPrice = 50;
                 maxPrice = 100;
             } else if (selectedPrice === '$100 - $150') {
                 minPrice = 100;
                 maxPrice = 150;
-            } else if (selectedPrice === 'Over $150') {
-                minPrice = 150;
-            }
-
+            } else if (selectedPrice === 'Over $150') minPrice = 150;
             string.push(`minPrice=${minPrice}&maxPrice=${maxPrice}`);
         }
         setRestQuery(string.join('&'));
@@ -223,7 +220,7 @@ export default function ProductFilterSection({
 
     return (
         <div className="min-h-screen bg-white text-slate-900 font-sans p-6 md:p-10 max-w-[1600px] mx-auto">
-            <h1 className="text-[4vw] font-smooch font-bold uppercase tracking-tight mb-8">
+            <h1 className="text-4xl md:text-[4vw] font-smooch font-bold uppercase tracking-tight mb-8">
                 find your product
             </h1>
 
@@ -237,7 +234,7 @@ export default function ProductFilterSection({
                 </button>
 
                 <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium uppercase mr-2">
+                    <span className="hidden md:inline-block text-sm font-medium uppercase mr-2">
                         View:
                     </span>
                     <button
@@ -255,11 +252,13 @@ export default function ProductFilterSection({
                 </div>
             </div>
 
-            <div className="flex items-start gap-8">
+            {/* RESPONSIVE LAYOUT WRAPPER: flex-col on mobile, md:flex-row on desktop */}
+            <div className="flex flex-col md:flex-row items-start gap-8">
+                {/* Filter Sidebar */}
                 <div
                     ref={sidebarRef}
-                    className="overflow-hidden shrink-0"
-                    style={{ width: 0, opacity: 0 }}
+                    className="overflow-hidden shrink-0 w-full md:w-auto"
+                    // Removed inline initial styling so GSAP handles the initial render safely
                 >
                     <FilterSidebar
                         expandedSections={expandedSections}
@@ -267,10 +266,11 @@ export default function ProductFilterSection({
                         filterData={filterData}
                         filterState={filterState}
                         onFilterChange={updateFilterParameters}
-                        selectedPrice={selectedPrice} // <--- Pass the state down here
+                        selectedPrice={selectedPrice}
                     />
                 </div>
 
+                {/* Product Grid */}
                 <div className="flex-1 transition-all duration-300 w-full">
                     <div
                         className={
@@ -280,22 +280,55 @@ export default function ProductFilterSection({
                         }
                     >
                         {products.map((item) => (
-                            <div
+                            <Link
+                                href={`/product-detail/${item._id}`}
                                 key={item._id}
-                                className={`group relative ${viewMode === 'list' ? ' flex gap-8 items-center border-b pb-6' : ''}`}
+                                className={`group relative ${viewMode === 'list' ? 'flex flex-col sm:flex-row gap-6 sm:gap-8 items-start sm:items-center border-b pb-6' : 'block'}`}
                             >
                                 <div
-                                    className={`bg-slate-100 relative overflow-hidden ${viewMode === 'list' ? 'w-48 h-64 shrink-0' : 'aspect-[3/4] w-full mb-4'}`}
+                                    className={`bg-slate-100 relative overflow-hidden ${viewMode === 'list' ? 'w-full sm:w-48 h-64 shrink-0' : 'aspect-[3/4] w-full mb-4'}`}
                                 >
                                     <Image
                                         src={item.imageUrls?.[0]}
-                                        alt="Product image" // Replace with item.name or a relevant description
+                                        alt={item.name}
                                         fill
-                                        className="object-cover"
+                                        className="object-cover mix-blend-multiply"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
+
+                                    {/* Desktop Hover Overlay (Hidden on Mobile) */}
+                                    <div className="absolute inset-0 hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 pointer-events-auto">
+                                        <div className="flex flex-col gap-2">
+                                            <Button
+                                                onClick={(e) =>
+                                                    handleAddProduct(item, e)
+                                                }
+                                                variant="secondary"
+                                                className="bg-white cursor-pointer text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
+                                            >
+                                                + Quick Add
+                                            </Button>
+                                            <div className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200 h-9 px-4 py-2 transition-colors">
+                                                View Detail
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
+
+                                {/* Mobile Quick Add Button */}
+                                <div className="block md:hidden w-full mb-3">
+                                    <Button
+                                        onClick={(e) =>
+                                            handleAddProduct(item, e)
+                                        }
+                                        className="w-full bg-black text-white hover:bg-gray-900 rounded-none uppercase font-bold tracking-widest text-xs h-11 flex items-center justify-center gap-2"
+                                    >
+                                        <ShoppingBag className="size-4" />
+                                        Add To Cart
+                                    </Button>
+                                </div>
+
+                                <div className="w-full">
                                     <h3 className="font-bold text-sm uppercase mb-1">
                                         {item.name}
                                     </h3>
@@ -320,29 +353,11 @@ export default function ProductFilterSection({
                                         BDT {item.offerPrice}
                                     </p>
                                 </div>
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/5 pointer-events-auto">
-                                    <div className="flex flex-col gap-2">
-                                        <Button
-                                            onClick={(e) =>
-                                                handleAddProduct(item, e)
-                                            }
-                                            variant="secondary"
-                                            className="bg-white cursor-pointer text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200"
-                                        >
-                                            + Quick Add
-                                        </Button>
-                                        <Link
-                                            href={`/product-detail/${item._id}`}
-                                            className="inline-flex items-center justify-center whitespace-nowrap bg-white text-black hover:bg-gray-100 uppercase font-bold tracking-widest text-xs rounded-none shadow-xl border border-gray-200 h-9 px-4 py-2 transition-colors"
-                                        >
-                                            View Detail
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
-                    <div className="flex justify-center py-4">
+
+                    <div className="flex justify-center py-4 mt-8">
                         <TablePagination
                             totalPage={meta?.totalPage}
                             restQuery={restQuery}

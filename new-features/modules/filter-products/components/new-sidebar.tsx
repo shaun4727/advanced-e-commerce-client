@@ -33,7 +33,7 @@ export const FilterSidebar = ({
     selectedPrice,
 }: FilterSidebarProps) => {
     return (
-        <div className="w-[280px] pr-6 flex flex-col">
+        <div className=" pr-6 flex flex-col">
             {/* Brand Section */}
             <div className="border-b border-black pb-4 mb-4">
                 <button

@@ -61,7 +61,7 @@ export function PromoCards() {
     const router = useRouter();
 
     const navigateToFilter = () => {
-        router.push(`/filter`);
+        router.push(`/products`);
     };
 
     useGSAP(

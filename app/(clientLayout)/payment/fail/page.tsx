@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, RefreshCcw, ShoppingBag } from 'lucide-react';
+import { AlertCircle, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -59,20 +59,14 @@ function FailContent() {
                 {/* Actions */}
                 <div className="space-y-3 pt-4">
                     {/* Assuming you have a checkout or cart route to retry */}
-                    <Link href="/checkout" className="block">
-                        <Button className="w-full h-14 bg-black text-white hover:bg-gray-800 rounded-none font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                            <RefreshCcw className="size-4" />
-                            Try Again
-                        </Button>
-                    </Link>
 
-                    <Link href="/cart" className="block">
+                    <Link href="/" className="block">
                         <Button
                             variant="outline"
                             className="w-full h-14 rounded-none border-2 border-gray-200 hover:border-black hover:bg-gray-50 font-bold uppercase tracking-widest flex items-center justify-center gap-2"
                         >
                             <ShoppingBag className="size-4" />
-                            Return to Cart
+                            Continue Shopping
                         </Button>
                     </Link>
                 </div>

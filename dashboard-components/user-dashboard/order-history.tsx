@@ -217,6 +217,8 @@ const steps = [
     },
 ];
 
+// Remove the global 'steps' array that was here
+
 export default function OrderHistory() {
     const [isLoading, setIsLoading] = useState(true);
     const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -238,61 +240,86 @@ export default function OrderHistory() {
         completed: 0,
     });
 
+    // 1. Dynamic Steps Generator based on your strict status rules
+    const getStepsForOrder = (status: string | undefined) => {
+        return [
+            {
+                id: 1,
+                title: 'Payment Detail',
+                subtitle: 'Customer payment',
+                icon: 'CreditCard',
+                completed: true,
+                active: true, // Always clickable
+            },
+            {
+                id: 2,
+                title: 'Shipped',
+                subtitle: 'On delivery',
+                icon: 'Truck',
+                completed: status === 'Completed',
+                active: status === 'Picked', // Clickable ONLY when Picked
+            },
+            {
+                id: 3,
+                title: 'Completed',
+                subtitle: 'Order completed',
+                icon: 'CheckCircle',
+                completed: status === 'Completed',
+                active: status === 'Completed', // Clickable ONLY when Completed
+            },
+        ];
+    };
+
+    const currentSteps = getStepsForOrder(activeOrder?.status);
+
     useEffect(() => {
         getUserOrderDetailMethod();
         dispatch(updateGlobalLoaderState(false));
-        setCurrentTab(steps[0]);
     }, []);
 
+    // 2. Cleaned up Socket Handlers
     useEffect(() => {
         if (!socket) return;
 
         const handleShippedOrder = ({ orderId }: { orderId: string }) => {
             setActiveOrder((prevOrder) => {
-                // 1. If there's no active order, or it doesn't match the ID, return as is
-                if (!prevOrder) {
-                    return prevOrder;
-                }
-
-                // 2. Return a NEW object with the updated status
-                return {
-                    ...prevOrder,
-                    status: 'Picked',
-                };
+                if (!prevOrder || prevOrder._id !== orderId) return prevOrder;
+                return { ...prevOrder, status: 'Picked' };
             });
-            steps[1].active = true;
         };
 
         const handleReceivedOrder = ({ orderId }: { orderId: string }) => {
             setActiveOrder((prevOrder) => {
-                // 1. If there's no active order, or it doesn't match the ID, return as is
-                if (!prevOrder) {
-                    return prevOrder;
-                }
-
-                // 2. Return a NEW object with the updated status
-                return {
-                    ...prevOrder,
-                    status: 'Completed',
-                };
+                if (!prevOrder || prevOrder._id !== orderId) return prevOrder;
+                return { ...prevOrder, status: 'Completed' };
             });
-
-            steps[2].active = true;
         };
 
         socket.on('ShippedOrder', handleShippedOrder);
-
         socket.on('ReceivedOrder', handleReceivedOrder);
-
-        if (activeOrder?.status === 'Completed') {
-            steps[1].active = false;
-            steps[2].active = true;
-        }
 
         return () => {
             socket.off('ShippedOrder', handleShippedOrder);
+            socket.off('ReceivedOrder', handleReceivedOrder);
         };
-    }, [socket, activeOrder]);
+    }, [socket]);
+
+    // 3. Auto-switch tabs if the order updates while the drawer is open
+    useEffect(() => {
+        if (!activeOrder) return;
+        const activeTabInCurrentSteps = currentSteps.find(
+            (s) => s.id === currentTab?.id,
+        );
+
+        // If the current tab becomes invalid (e.g. status changes from Picked to Completed)
+        if (activeTabInCurrentSteps && !activeTabInCurrentSteps.active) {
+            let defaultStep = currentSteps[0];
+            if (activeOrder.status === 'Picked') defaultStep = currentSteps[1];
+            if (activeOrder.status === 'Completed')
+                defaultStep = currentSteps[2];
+            orderDtlSwitch(defaultStep);
+        }
+    }, [activeOrder?.status]);
 
     const getUserOrderDetailMethod = async () => {
         try {
@@ -337,20 +364,17 @@ export default function OrderHistory() {
         return matchesSearch;
     });
 
-    const getCurrentOrderStatusClass = (step: IStep) => {
-        if (currentTab === step) {
+    const getCurrentOrderStatusClass = (step: any) => {
+        if (currentTab?.id === step.id) {
             return 'bg-orange-500 text-white';
         }
-        return step.completed
+        return step.completed || step.active
             ? 'bg-orange-300 text-white'
-            : step.active
-              ? 'bg-orange-300 text-white'
-              : 'bg-gray-100 text-gray-400';
+            : 'bg-gray-100 text-gray-400';
     };
 
     const sortedOrders = [...filteredOrders].sort((a, b) => {
         if (!sortColumn) return 0;
-
         let comparison = 0;
         switch (sortColumn) {
             case 'id':
@@ -373,7 +397,6 @@ export default function OrderHistory() {
             default:
                 comparison = 0;
         }
-
         return sortDirection === 'asc' ? comparison : -comparison;
     });
 
@@ -395,14 +418,19 @@ export default function OrderHistory() {
         );
     }
 
+    // 4. Open drawer and dynamically set the default active tab
     const openDrawerToCheckOrder = (order: IOrderData) => {
-        orderDtlSwitch(steps[0]);
         setActiveOrder(order);
 
-        // Join the user to a room. socket
+        const orderSteps = getStepsForOrder(order.status);
+        let defaultStep = orderSteps[0]; // Payment detail by default
+        if (order.status === 'Picked') defaultStep = orderSteps[1];
+        if (order.status === 'Completed') defaultStep = orderSteps[2];
+
+        orderDtlSwitch(defaultStep);
 
         new Promise((resolve) => {
-            socket.emit(
+            socket?.emit(
                 'joinOrderRoom',
                 { orderId: order?._id },
                 (response: any) => {
@@ -411,17 +439,12 @@ export default function OrderHistory() {
             );
         }).then((res) => console.log('success'));
 
-        if (order.status === 'Picked') {
-            steps[1].active = true;
-        } else {
-            steps[1].active = false;
-        }
         setOpenDrawer(true);
     };
 
-    const orderDtlSwitch = (step: IStep) => {
+    const orderDtlSwitch = (step: any) => {
         if (!step?.active) {
-            return;
+            return; // Guard to prevent clicking disabled steps
         }
 
         setCurrentTab(step);
@@ -444,9 +467,8 @@ export default function OrderHistory() {
     };
 
     const getTabDetail = (order: IOrderData) => {
-        if (!currentTab?.active) {
-            return;
-        }
+        if (!currentTab?.active) return;
+
         if (tabSwitch.shipment === 1) {
             return (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -457,7 +479,6 @@ export default function OrderHistory() {
                                 <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                                     Shipping Address (Seller)
                                 </h3>
-                                {/* <Edit className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer hover:text-gray-600" /> */}
                             </div>
                             <div className="space-y-1 text-sm sm:text-base text-gray-700">
                                 <p className="font-medium">EMART Group</p>
@@ -467,12 +488,11 @@ export default function OrderHistory() {
                         </div>
 
                         {/* Buyer Address */}
-                        <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                        <div className="bg-gray-50 rounded-lg p-4 sm:p-6 mt-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                                     Shipping Address (Buyer)
                                 </h3>
-                                {/* <Edit className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 cursor-pointer hover:text-gray-600" /> */}
                             </div>
                             <div className="space-y-1 text-sm sm:text-base text-gray-700">
                                 <p className="font-medium">
@@ -487,7 +507,6 @@ export default function OrderHistory() {
                                     {order.shippingAddress?.zip_code ?? ''}
                                 </p>
                                 <p>Bangladesh</p>
-                                {/* <p>4567 Elm Street, Apt 3B,</p> */}
                             </div>
                         </div>
                     </div>
@@ -845,14 +864,12 @@ export default function OrderHistory() {
                                             Order process
                                         </span>
                                     </div>
-                                    {/* <span className="text-sm text-gray-600 ml-5 sm:ml-0">
-                                        No Resi: 34u2394y239y
-                                    </span> */}
                                 </div>
 
                                 <div className="mb-8">
                                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                        {steps.map((step, index) => {
+                                        {/* 5. Dynamically mapped currentSteps rendering */}
+                                        {currentSteps.map((step, index) => {
                                             let IconComponent;
                                             if (step.icon === 'CheckCircle') {
                                                 IconComponent = CheckCircle;
@@ -870,7 +887,8 @@ export default function OrderHistory() {
                                                         onClick={() =>
                                                             orderDtlSwitch(step)
                                                         }
-                                                        className="flex items-center sm:flex-col sm:items-center"
+                                                        // Explicit CSS for unclickable options
+                                                        className={`flex items-center sm:flex-col sm:items-center transition-opacity ${step.active ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed opacity-50'}`}
                                                     >
                                                         <div
                                                             className={`
@@ -899,9 +917,9 @@ export default function OrderHistory() {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    {/* Connection line for mobile */}
                                                     {index <
-                                                        steps.length - 1 && (
+                                                        currentSteps.length -
+                                                            1 && (
                                                         <div className="hidden sm:block flex-1 h-px bg-gray-200 mx-4"></div>
                                                     )}
                                                 </div>
@@ -910,25 +928,9 @@ export default function OrderHistory() {
                                     </div>
                                 </div>
 
-                                {/* Shipping Addresses */}
-
                                 {getTabDetail(activeOrder as IOrderData)}
                             </div>
-                            <DrawerFooter>
-                                {/* {tabSwitch.shipment === 1 && (
-                                    <div className="flex justify-center">
-                                        <Button
-                                            className="w-md"
-                                            onClick={handleTrackOrder}
-                                        >
-                                            Track Order
-                                        </Button>
-                                    </div>
-                                )} */}
-                                {/* <DrawerClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                              </DrawerClose> */}
-                            </DrawerFooter>
+                            <DrawerFooter></DrawerFooter>
                         </div>
                     </DrawerContent>
                 </Drawer>

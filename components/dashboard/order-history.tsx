@@ -382,20 +382,23 @@ export default function OrderHistoryAdmin({ agents }: { agents: IUser[] }) {
 
         return sortDirection === 'asc' ? comparison : -comparison;
     });
-
     const getAgentInfo = (order: IOrderData) => {
-        if (
-            order &&
-            order.assigned &&
-            typeof order.assigned.agentId !== 'string'
-        ) {
+        // 1. Return the agent's name if assigned
+        if (order?.assigned && typeof order.assigned.agentId !== 'string') {
             return order.assigned.agentId.name;
         }
-        return (
-            <Button variant="outline" onClick={() => selectedOrder(order)}>
-                Assign Agent
-            </Button>
-        );
+
+        // 2. Return the JSX Button if not completed
+        if (order.status !== 'Completed') {
+            return (
+                <Button variant="outline" onClick={() => selectedOrder(order)}>
+                    Assign Agent
+                </Button>
+            );
+        }
+
+        // 3. Return the delivered string
+        return 'Delivered';
     };
 
     // Pagination

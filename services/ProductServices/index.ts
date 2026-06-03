@@ -202,10 +202,12 @@ export const assignAgentApi = async (formData: IAgentOrder) => {
     }
 };
 
-export const getCustomerInvoiceApiServer = async () => {
+// Accept orderId as a parameter
+export const getCustomerInvoiceApiServer = async (orderId: string) => {
     try {
         const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_API}/order/get-customer-invoice`,
+            // Append orderId to the URL
+            `${process.env.NEXT_PUBLIC_BASE_API}/order/get-customer-invoice/${orderId}`,
             {
                 method: 'GET',
                 headers: {

@@ -455,17 +455,22 @@ export default function OrderHistory() {
         };
         setTabSwitch(resetTabs);
     };
-
-    const fetchInvoice = async () => {
+    // Update the function to accept the specific orderId
+    const fetchInvoice = async (orderId: string) => {
         try {
-            const res = await getCustomerInvoiceApiServer();
-            InvoiceGenerator(res.data);
-            console.log(res);
+            const res = await getCustomerInvoiceApiServer(orderId);
+
+            // Ensure data exists before trying to generate the invoice
+            if (res.success && res.data) {
+                InvoiceGenerator(res.data);
+                console.log('Invoice generated successfully');
+            } else {
+                console.error('Failed to fetch invoice data');
+            }
         } catch (err) {
             console.log(err);
         }
     };
-
     const getTabDetail = (order: IOrderData) => {
         if (!currentTab?.active) return;
 
@@ -828,7 +833,10 @@ export default function OrderHistory() {
                                         <TableCell>
                                             <Button
                                                 variant="default"
-                                                onClick={() => fetchInvoice()}
+                                                // Pass the specific order._id here!
+                                                onClick={() =>
+                                                    fetchInvoice(order._id)
+                                                }
                                             >
                                                 Download
                                             </Button>
